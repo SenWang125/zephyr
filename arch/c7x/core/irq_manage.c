@@ -17,17 +17,21 @@
 
 #include <zephyr/arch/c7x/arch.h>
 #include <zephyr/arch/c7x/irq.h>
+#include <zephyr/drivers/interrupt_controller/intc_ti_c7x_clec.h>
 
 BUILD_ASSERT(CONFIG_NUM_IRQS == C7X_NUM_IRQS, "the ISR table must cover every IRQ");
 
 void arch_irq_enable(unsigned int irq)
 {
-	z_c7x_write_eeset(UINT64_C(1) << (irq & C7X_IRQ_MASK));
+#ifdef CONFIG_TI_C7X_CLEC
+	c7x_clec_irq_enable(irq);
+#endif
+	z_c7x_write_eeset(BIT64(irq & C7X_IRQ_MASK));
 }
 
 void arch_irq_disable(unsigned int irq)
 {
-	z_c7x_write_eeclr(UINT64_C(1) << (irq & C7X_IRQ_MASK));
+	z_c7x_write_eeclr(BIT64(irq & C7X_IRQ_MASK));
 }
 
 void z_c7x_irq_priority_set(unsigned int irq, unsigned int prio)

@@ -1,0 +1,11 @@
+# Copyright (c) 2026 Texas Instruments Incorporated
+# SPDX-License-Identifier: Apache-2.0
+
+config TI_C7X_CLEC
+	bool "TI C7x CLEC interrupt controller driver"
+	default y
+	depends on DT_HAS_TI_C7X_CLEC_ENABLED
+	help
+	  Driver for the C7x Compute-cluster Local Event Controller (CLEC),
+	  which maps K3 system-level events onto the C7x core's 64 internal
+	  event lines. Every hardware interrupt on the C7x arrives through it.
