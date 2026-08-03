@@ -51,6 +51,8 @@
  * and therefore this header is not meant to exist in-tree
  */
 #include <toolchain/other.h>
+#elif defined(__C7000__)
+#include <zephyr/toolchain/cl7x.h>
 #elif defined(__XCC__)
 #include <zephyr/toolchain/xcc.h>
 #elif defined(__CCAC__)
