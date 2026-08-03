@@ -7,3 +7,38 @@ config MBOX_TI_SECURE_PROXY
 	depends on DT_HAS_TI_SECURE_PROXY_ENABLED
 	help
 	  Driver for TI Secure Proxy Mailbox.
+
+if MBOX_TI_SECURE_PROXY
+
+config MBOX_TI_SECPROXY_POLL
+	bool "Poll RX threads that have no interrupt"
+	help
+	  Receive on channels whose DT node declares no matching rx_<n>
+	  interrupt by polling the thread status from a driver thread instead
+	  of returning -EINVAL from mbox_set_enabled().
+
+	  Needed on hosts that own secure-proxy threads but get no interrupt
+	  route to them.
+
+config MBOX_TI_SECPROXY_POLL_INTERVAL_MS
+	int "Poll interval (ms)"
+	default 1
+	depends on MBOX_TI_SECPROXY_POLL
+	help
+	  Bounds how long a response sits unread. Transfers are infrequent and
+	  synchronous, so this mostly sets their latency floor.
+
+config MBOX_TI_SECPROXY_POLL_PRIORITY
+	int "Poll thread priority"
+	default 0
+	depends on MBOX_TI_SECPROXY_POLL
+	help
+	  Must outrank any thread that blocks waiting on a response, or the
+	  reply cannot be collected until that thread yields.
+
+config MBOX_TI_SECPROXY_POLL_STACK_SIZE
+	int "Poll thread stack size"
+	default 1024
+	depends on MBOX_TI_SECPROXY_POLL
+
+endif # MBOX_TI_SECURE_PROXY
