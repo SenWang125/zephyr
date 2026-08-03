@@ -1,0 +1,18 @@
+# Copyright (c) 2025-2026 Texas Instruments Incorporated
+# SPDX-License-Identifier: Apache-2.0
+
+if BOARD_AM62D_EVM
+
+config MBOX
+	default y
+
+config IPC_SERVICE
+	default y
+
+config OPENAMP
+	default y
+
+config HEAP_MEM_POOL_SIZE
+	default 4096
+
+endif # BOARD_AM62D_EVM
