@@ -178,6 +178,8 @@ static inline void arch_exception_call_dump_hook(const char *format, ...)
 #include <zephyr/arch/sparc/exception.h>
 #elif defined(CONFIG_RX)
 #include <zephyr/arch/rx/exception.h>
+#elif defined(CONFIG_C7X)
+#include <zephyr/arch/c7x/exception.h>
 #elif defined(CONFIG_HEXAGON)
 #include <zephyr/arch/hexagon/exception.h>
 #elif defined(CONFIG_ARCH_IS_SET)

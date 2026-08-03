@@ -33,6 +33,8 @@
 #include <zephyr/arch/sparc/arch.h>
 #elif defined(CONFIG_RX)
 #include <zephyr/arch/rx/arch.h>
+#elif defined(CONFIG_C7X)
+#include <zephyr/arch/c7x/arch.h>
 #elif defined(CONFIG_HEXAGON)
 #include <zephyr/arch/hexagon/arch.h>
 #elif defined(CONFIG_ARCH_IS_SET)

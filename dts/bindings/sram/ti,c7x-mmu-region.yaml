@@ -1,0 +1,17 @@
+# Copyright (c) 2026 Texas Instruments Incorporated
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  A physical memory window the TI C7x maps at the same virtual address, with
+  the cacheability given by zephyr,memory-attr (DT_MEM_CACHEABLE or not).
+
+compatible: "ti,c7x-mmu-region"
+
+include: [base.yaml, "zephyr,memory-common.yaml"]
+
+properties:
+  reg:
+    required: true
+
+  zephyr,memory-attr:
+    required: true

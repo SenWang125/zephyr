@@ -21,6 +21,7 @@ The Zephyr kernel supports multiple architectures, including:
  - Renesas RX
  - RISC-V (32- and 64-bit)
  - SPARC V8
+ - TI C7x (64-bit)
  - Tensilica Xtensa
 
 The full list of supported boards based on these architectures can be found :ref:`here <boards>`.

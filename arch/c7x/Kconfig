@@ -1,0 +1,75 @@
+# Copyright (c) 2026 Texas Instruments Incorporated
+# SPDX-License-Identifier: Apache-2.0
+
+config ARCH
+	string
+	default "c7x" if C7X
+
+if C7X
+
+config CPU_C7504
+	bool
+	select CPU_HAS_MMU
+	select MMU
+	help
+	  This option signifies the use of a C7504 (C7x256v) DSP core.
+	  Found in AM62A/D SoC.
+
+config CPU_C7524
+	bool
+	select CPU_HAS_MMU
+	select MMU
+	help
+	  This option signifies the use of a C7524 (C7x256v) DSP core.
+	  Found in AM275, AM67A and J722 variant SoC. The core has the
+	  internal lookup table and histogram accelerator.
+
+menu "C7x Architecture Options"
+
+config C7X_DBG_TRACE
+	bool "Exception debug trace"
+	help
+	  The reset and NME vectors record a trace and the faulting RP in
+	  z_c7x_dbg_trace before halting. Without this the vectors record
+	  nothing when halted.
+
+config C7X_L1D_WRITE_THROUGH
+	bool "L1D write-through"
+	help
+	  Run the L1D data cache write-through. Otherwise it is write-back.
+
+config C7X_ILUT
+	bool "Internal lookup table and histogram"
+	default y
+	depends on CPU_C7524
+	help
+	  Permit the internal lookup table and histogram instructions. They
+	  are disallowed out of reset and raise an exception until the enable
+	  register is written.
+
+config C7X_I2528_WORKAROUND
+	bool "Work around silicon errata i2528"
+	default y
+	depends on CPU_C7504 || CPU_C7524
+	help
+	  The MMU can misclassify the load/store category of an instruction
+	  while checking memory permissions, so a valid access to a read-only
+	  page may be flagged or allowed an illegal store to one. The compiler
+	  avoids the affected sequences by default. If no memory page is
+	  configured read-only, the workaround is not needed and can be
+	  disabled.
+
+config C7X_I2087_WORKAROUND
+	bool "Work around silicon errata i2087"
+	default y
+	depends on CPU_C7504 || CPU_C7524
+	help
+	  After power-on the MMA can report errors in the HWA_STATUS
+	  FirstErrorCode and LastErrorCode fields until it has been opened
+	  with a state machine reset. The SW workaround manually resets MMA
+	  once during early init. It is not needed when nothing reads
+	  HWA_STATUS.
+
+endmenu
+
+endif # C7X
