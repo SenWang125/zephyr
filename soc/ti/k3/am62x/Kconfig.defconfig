@@ -27,4 +27,7 @@ endif # SERIAL
 config BUILD_OUTPUT_BIN
 	default n if SOC_SERIES_AM62X_M4
 
+config C7X_L1D_WRITE_THROUGH
+	default y if SOC_AM62D2_C71_0
+
 endif # SOC_SERIES_AM62X

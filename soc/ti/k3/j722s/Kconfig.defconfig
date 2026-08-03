@@ -27,4 +27,7 @@ endif # SERIAL
 config BUILD_OUTPUT_BIN
 	default n if SOC_SERIES_J722S_R5
 
+config C7X_L1D_WRITE_THROUGH
+	default y if SOC_SERIES_J722S_C7X
+
 endif # SOC_SERIES_J722S
