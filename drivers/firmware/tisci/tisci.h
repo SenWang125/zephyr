@@ -404,6 +404,7 @@ struct tisci_msg_resp_set_device_resets {
  *		being required by the device.(default)
  *		MSG_CLOCK_SW_STATE_REQ:  Configure the clock to be enabled,
  *		regardless of the state of the device.
+ * @param clk_id_32:	Clock identifier if clk_id is 255.
  *
  * Normally, all required clocks are managed by TISCI entity, this is used
  * only for specific control *IF* required. Auto managed state is
@@ -425,6 +426,7 @@ struct tisci_msg_req_set_clock_state {
 #define MSG_CLOCK_SW_STATE_AUTO  1
 #define MSG_CLOCK_SW_STATE_REQ   2
 	uint8_t request_state;
+	uint32_t clk_id_32;
 } __packed;
 
 /**
@@ -443,6 +445,7 @@ struct tisci_msg_resp_set_clock_state {
  * @param clk_id:	Clock identifier for the device for this request.
  *		Each device has it's own set of clock inputs. This indexes
  *		which clock input to get state of.
+ * @param clk_id_32:	Clock identifier if clk_id is 255.
  *
  * Request type is TISCI_MSG_GET_CLOCK_STATE, response is state
  * of the clock
@@ -451,6 +454,7 @@ struct tisci_msg_req_get_clock_state {
 	struct tisci_msg_hdr hdr;
 	uint32_t dev_id;
 	uint8_t clk_id;
+	uint32_t clk_id_32;
 } __packed;
 
 /**
@@ -483,6 +487,8 @@ struct tisci_msg_resp_get_clock_state {
  *		which clock input to modify.
  * @param parent_id:	The new clock parent is selectable by an index via this
  *		parameter.
+ * @param clk_id_32:	Clock identifier if clk_id is 255.
+ * @param parent_id_32:	Parent identifier if parent_id is 255.
  *
  * Request type is TISCI_MSG_SET_CLOCK_PARENT, response is generic
  * ACK / NACK message.
@@ -492,6 +498,8 @@ struct tisci_msg_req_set_clock_parent {
 	uint32_t dev_id;
 	uint8_t clk_id;
 	uint8_t parent_id;
+	uint32_t clk_id_32;
+	uint32_t parent_id_32;
 } __packed;
 
 /**
@@ -510,6 +518,7 @@ struct tisci_msg_resp_set_clock_parent {
  * @param clk_id:	Clock identifier for the device for this request.
  *		Each device has it's own set of clock inputs. This indexes
  *		which clock input to get the parent for.
+ * @param clk_id_32:	Clock identifier if clk_id is 255.
  *
  * Request type is TISCI_MSG_GET_CLOCK_PARENT, response is parent information
  */
@@ -517,6 +526,7 @@ struct tisci_msg_req_get_clock_parent {
 	struct tisci_msg_hdr hdr;
 	uint32_t dev_id;
 	uint8_t clk_id;
+	uint32_t clk_id_32;
 } __packed;
 
 /**
@@ -538,6 +548,7 @@ struct tisci_msg_resp_get_clock_parent {
  * @param hdr:	Generic header
  * @param dev_id:	Device identifier this request is for
  * @param clk_id:	Clock identifier for the device for this request.
+ * @param clk_id_32:	Clock identifier if clk_id is 255.
  *
  * This request provides information about how many clock parent options
  * are available for a given clock to a device. This is typically used
@@ -550,6 +561,7 @@ struct tisci_msg_req_get_clock_num_parents {
 	struct tisci_msg_hdr hdr;
 	uint32_t dev_id;
 	uint8_t clk_id;
+	uint32_t clk_id_32;
 } __packed;
 
 /**
@@ -579,6 +591,7 @@ struct tisci_msg_resp_get_clock_num_parents {
  *		allowable programmed frequency and does not account for clock
  *		tolerances and jitter.
  * @param clk_id:	Clock identifier for the device for this request.
+ * @param clk_id_32:	Clock identifier if clk_id is 255.
  *
  * NOTE: Normally clock frequency management is automatically done by TISCI
  * entity. In case of specific requests, TISCI evaluates capability to achieve
@@ -595,6 +608,7 @@ struct tisci_msg_req_query_clock_freq {
 	uint64_t target_freq_hz;
 	uint64_t max_freq_hz;
 	uint8_t clk_id;
+	uint32_t clk_id_32;
 } __packed;
 
 /**
@@ -625,6 +639,7 @@ struct tisci_msg_resp_query_clock_freq {
  *		allowable programmed frequency and does not account for clock
  *		tolerances and jitter.
  * @param clk_id:	Clock identifier for the device for this request.
+ * @param clk_id_32:	Clock identifier if clk_id is 255.
  *
  * NOTE: Normally clock frequency management is automatically done by TISCI
  * entity. In case of specific requests, TISCI evaluates capability to achieve
@@ -653,6 +668,7 @@ struct tisci_msg_req_set_clock_freq {
 	uint64_t target_freq_hz;
 	uint64_t max_freq_hz;
 	uint8_t clk_id;
+	uint32_t clk_id_32;
 } __packed;
 
 /**
@@ -669,6 +685,7 @@ struct tisci_msg_resp_set_clock_freq {
  * @param hdr:	Generic Header
  * @param dev_id:	Device identifier this request is for
  * @param clk_id:	Clock identifier for the device for this request.
+ * @param clk_id_32:	Clock identifier if clk_id is 255.
  *
  * NOTE: Normally clock frequency management is automatically done by TISCI
  * entity. In some cases, clock frequencies are configured by host.
@@ -680,6 +697,7 @@ struct tisci_msg_req_get_clock_freq {
 	struct tisci_msg_hdr hdr;
 	uint32_t dev_id;
 	uint8_t clk_id;
+	uint32_t clk_id_32;
 } __packed;
 
 /**
