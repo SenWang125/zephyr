@@ -249,7 +249,7 @@ int tisci_cmd_get_clock_state(const struct device *dev, uint32_t dev_id, uint8_t
 			      uint8_t *programmed_state, uint8_t *current_state)
 {
 	struct tisci_msg_resp_get_clock_state resp;
-	struct tisci_msg_req_get_clock_state req;
+	struct tisci_msg_req_get_clock_state req = {0};
 	struct tisci_xfer *xfer;
 	int ret;
 
@@ -353,7 +353,7 @@ int tisci_cmd_clk_get_match_freq(const struct device *dev, uint32_t dev_id, uint
 				 uint64_t *match_freq)
 {
 	struct tisci_msg_resp_query_clock_freq resp;
-	struct tisci_msg_req_query_clock_freq req;
+	struct tisci_msg_req_query_clock_freq req = {0};
 	struct tisci_xfer *xfer;
 	int ret;
 
@@ -388,7 +388,7 @@ int tisci_cmd_clk_get_match_freq(const struct device *dev, uint32_t dev_id, uint
 int tisci_cmd_clk_set_freq(const struct device *dev, uint32_t dev_id, uint8_t clk_id,
 			   uint64_t min_freq, uint64_t target_freq, uint64_t max_freq)
 {
-	struct tisci_msg_req_set_clock_freq req;
+	struct tisci_msg_req_set_clock_freq req = {0};
 	struct tisci_msg_resp_set_clock_freq resp;
 	struct tisci_xfer *xfer;
 	int ret;
@@ -419,7 +419,7 @@ int tisci_cmd_clk_get_freq(const struct device *dev, uint32_t dev_id, uint8_t cl
 			   uint64_t *freq)
 {
 	struct tisci_msg_resp_get_clock_freq resp;
-	struct tisci_msg_req_get_clock_freq req;
+	struct tisci_msg_req_get_clock_freq req = {0};
 	struct tisci_xfer *xfer;
 	int ret;
 
@@ -451,7 +451,7 @@ int tisci_cmd_clk_get_freq(const struct device *dev, uint32_t dev_id, uint8_t cl
 int tisci_set_clock_state(const struct device *dev, uint32_t dev_id, uint8_t clk_id, uint32_t flags,
 			  uint8_t state)
 {
-	struct tisci_msg_req_set_clock_state req;
+	struct tisci_msg_req_set_clock_state req = {0};
 	struct tisci_msg_resp_set_clock_state resp;
 	struct tisci_xfer *xfer;
 	int ret;
@@ -479,7 +479,7 @@ int tisci_set_clock_state(const struct device *dev, uint32_t dev_id, uint8_t clk
 int tisci_cmd_clk_set_parent(const struct device *dev, uint32_t dev_id, uint8_t clk_id,
 			     uint8_t parent_id)
 {
-	struct tisci_msg_req_set_clock_parent req;
+	struct tisci_msg_req_set_clock_parent req = {0};
 	struct tisci_msg_resp_set_clock_parent resp;
 	struct tisci_xfer *xfer;
 	int ret;
@@ -504,7 +504,7 @@ int tisci_cmd_clk_get_parent(const struct device *dev, uint32_t dev_id, uint8_t 
 			     uint8_t *parent_id)
 {
 	struct tisci_msg_resp_get_clock_parent resp;
-	struct tisci_msg_req_get_clock_parent req;
+	struct tisci_msg_req_get_clock_parent req = {0};
 	struct tisci_xfer *xfer;
 	int ret;
 
@@ -537,7 +537,7 @@ int tisci_cmd_clk_get_num_parents(const struct device *dev, uint32_t dev_id, uin
 				  uint8_t *num_parents)
 {
 	struct tisci_msg_resp_get_clock_num_parents resp;
-	struct tisci_msg_req_get_clock_num_parents req;
+	struct tisci_msg_req_get_clock_num_parents req = {0};
 	struct tisci_xfer *xfer;
 	int ret;
 
@@ -593,7 +593,7 @@ int tisci_cmd_put_clock(const struct device *dev, uint32_t dev_id, uint8_t clk_i
 /* Device Management Functions */
 int tisci_set_device_state(const struct device *dev, uint32_t dev_id, uint32_t flags, uint8_t state)
 {
-	struct tisci_msg_req_set_device_state req;
+	struct tisci_msg_req_set_device_state req = {0};
 	struct tisci_msg_resp_set_device_state resp;
 	struct tisci_xfer *xfer;
 	int ret;
@@ -620,7 +620,7 @@ int tisci_set_device_state(const struct device *dev, uint32_t dev_id, uint32_t f
 int tisci_set_device_state_no_wait(const struct device *dev, uint32_t dev_id, uint32_t flags,
 				   uint8_t state)
 {
-	struct tisci_msg_req_set_device_state req;
+	struct tisci_msg_req_set_device_state req = {0};
 	struct tisci_msg_resp_set_device_state resp;
 	struct tisci_xfer *xfer;
 	int ret;
@@ -649,7 +649,7 @@ int tisci_get_device_state(const struct device *dev, uint32_t dev_id, uint32_t *
 			   uint32_t *resets, uint8_t *p_state, uint8_t *c_state)
 {
 	struct tisci_msg_resp_get_device_state resp;
-	struct tisci_msg_req_get_device_state req;
+	struct tisci_msg_req_get_device_state req = {0};
 	struct tisci_xfer *xfer;
 	int ret;
 
@@ -822,7 +822,7 @@ int tisci_cmd_dev_is_trans(const struct device *dev, uint32_t dev_id, bool *curr
 
 int tisci_cmd_set_device_resets(const struct device *dev, uint32_t dev_id, uint32_t reset_state)
 {
-	struct tisci_msg_req_set_device_resets req;
+	struct tisci_msg_req_set_device_resets req = {0};
 	struct tisci_msg_resp_set_device_resets resp;
 	struct tisci_xfer *xfer;
 	int ret;
@@ -855,7 +855,7 @@ int tisci_cmd_get_device_resets(const struct device *dev, uint32_t dev_id, uint3
 /* Processor Management Functions */
 int tisci_cmd_proc_request(const struct device *dev, uint8_t proc_id)
 {
-	struct tisci_msg_req_proc_request req;
+	struct tisci_msg_req_proc_request req = {0};
 	struct tisci_msg_resp_proc_request resp;
 	struct tisci_xfer *xfer;
 	int ret;
@@ -880,7 +880,7 @@ int tisci_cmd_proc_request(const struct device *dev, uint8_t proc_id)
 
 int tisci_cmd_proc_release(const struct device *dev, uint8_t proc_id)
 {
-	struct tisci_msg_req_proc_release req;
+	struct tisci_msg_req_proc_release req = {0};
 	struct tisci_msg_resp_proc_release resp;
 	struct tisci_xfer *xfer;
 	int ret;
@@ -905,7 +905,7 @@ int tisci_cmd_proc_release(const struct device *dev, uint8_t proc_id)
 
 int tisci_cmd_proc_handover(const struct device *dev, uint8_t proc_id, uint8_t host_id)
 {
-	struct tisci_msg_req_proc_handover req;
+	struct tisci_msg_req_proc_handover req = {0};
 	struct tisci_msg_resp_proc_handover resp;
 	struct tisci_xfer *xfer;
 	int ret;
@@ -932,7 +932,7 @@ int tisci_cmd_proc_handover(const struct device *dev, uint8_t proc_id, uint8_t h
 int tisci_cmd_set_proc_boot_cfg(const struct device *dev, uint8_t proc_id, uint64_t bootvector,
 				uint32_t config_flags_set, uint32_t config_flags_clear)
 {
-	struct tisci_msg_req_set_proc_boot_config req;
+	struct tisci_msg_req_set_proc_boot_config req = {0};
 	struct tisci_msg_resp_set_proc_boot_config resp;
 	struct tisci_xfer *xfer;
 	int ret;
@@ -962,7 +962,7 @@ int tisci_cmd_set_proc_boot_cfg(const struct device *dev, uint8_t proc_id, uint6
 int tisci_cmd_set_proc_boot_ctrl(const struct device *dev, uint8_t proc_id,
 				 uint32_t control_flags_set, uint32_t control_flags_clear)
 {
-	struct tisci_msg_req_set_proc_boot_ctrl req;
+	struct tisci_msg_req_set_proc_boot_ctrl req = {0};
 	struct tisci_msg_resp_set_proc_boot_ctrl resp;
 	struct tisci_xfer *xfer;
 	int ret;
@@ -990,7 +990,7 @@ int tisci_cmd_set_proc_boot_ctrl(const struct device *dev, uint8_t proc_id,
 int tisci_cmd_proc_auth_boot_image(const struct device *dev, uint64_t *image_addr,
 				   uint32_t *image_size)
 {
-	struct tisci_msg_req_proc_auth_boot_image req;
+	struct tisci_msg_req_proc_auth_boot_image req = {0};
 	struct tisci_msg_resp_proc_auth_boot_image resp;
 	struct tisci_xfer *xfer;
 	int ret;
@@ -1030,7 +1030,7 @@ int tisci_cmd_get_proc_boot_status(const struct device *dev, uint8_t proc_id, ui
 				   uint32_t *cfg_flags, uint32_t *ctrl_flags, uint32_t *sts_flags)
 {
 	struct tisci_msg_resp_get_proc_boot_status resp;
-	struct tisci_msg_req_get_proc_boot_status req;
+	struct tisci_msg_req_get_proc_boot_status req = {0};
 	struct tisci_xfer *xfer;
 	int ret;
 
@@ -1076,7 +1076,7 @@ int tisci_get_resource_range(const struct device *dev, uint32_t dev_id, uint8_t 
 			     uint8_t s_host, uint16_t *range_start, uint16_t *range_num)
 {
 	struct tisci_msg_resp_get_resource_range resp;
-	struct tisci_msg_req_get_resource_range req;
+	struct tisci_msg_req_get_resource_range req = {0};
 	struct tisci_xfer *xfer;
 	int ret;
 
@@ -1198,7 +1198,7 @@ int tisci_cmd_get_revision(const struct device *dev, struct tisci_version_info *
 
 int tisci_cmd_sys_reset(const struct device *dev)
 {
-	struct tisci_msg_req_reboot req;
+	struct tisci_msg_req_reboot req = {0};
 	struct tisci_msg_resp_reboot resp;
 	struct tisci_xfer *xfer;
 	int ret;
