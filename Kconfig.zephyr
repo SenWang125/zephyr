@@ -188,6 +188,13 @@ config LD_LINKER_SCRIPT_SUPPORTED
 	bool
 	default y
 
+config CMAKE_LINKER_GENERATOR_SUPPORTED
+	bool
+	default y if ARM
+	help
+	  Set by an architecture or toolchain that has validated the CMake
+	  linker script generator.
+
 choice LINKER_SCRIPT
 	prompt "Linker script"
 	default LD_LINKER_TEMPLATE if LD_LINKER_SCRIPT_SUPPORTED
@@ -202,7 +209,7 @@ config LD_LINKER_TEMPLATE
 
 config CMAKE_LINKER_GENERATOR
 	bool "CMake generator"
-	depends on ARM
+	depends on CMAKE_LINKER_GENERATOR_SUPPORTED
 	help
 	  Select this option to use the Zephyr CMake linker script generator.
 	  The linker configuration is written in CMake and the final linker
