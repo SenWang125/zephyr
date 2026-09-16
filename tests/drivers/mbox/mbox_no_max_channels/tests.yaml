@@ -1,0 +1,7 @@
+tests:
+  drivers.mbox.no_max_channels:
+    tags:
+      - drivers
+      - mbox
+    integration_platforms:
+      - native_sim

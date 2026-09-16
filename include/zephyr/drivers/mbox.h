@@ -466,7 +466,7 @@ static inline int mbox_set_enabled_dt(const struct mbox_dt_spec *spec,
  * @param dev MBOX device instance.
  *
  * @return >0     Maximum possible number of supported channels on success
- * @return -errno Negative errno on error.
+ * @return 0      No channels, or the driver supplies no getter.
  */
 __syscall uint32_t mbox_max_channels_get(const struct device *dev);
 
@@ -475,7 +475,11 @@ static inline uint32_t z_impl_mbox_max_channels_get(const struct device *dev)
 	const struct mbox_driver_api *api = DEVICE_API_GET(mbox, dev);
 
 	if (api->max_channels_get == NULL) {
-		return -ENOSYS;
+		/* The return type is unsigned, so -ENOSYS reaches the caller as
+		 * 4294967258 and reads as a valid channel count. A driver with
+		 * no getter exposes no channels.
+		 */
+		return 0;
 	}
 
 	return api->max_channels_get(dev);
