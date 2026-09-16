@@ -129,7 +129,10 @@ void z_sched_cpu_usage(uint8_t cpu_id, struct k_thread_runtime_stats *stats)
 	key = k_spin_lock(&usage_lock);
 	cpu = &_kernel.cpus[cpu_id];
 
-	if (cpu == _current_cpu) {
+	/* usage0 == 0 is the stop() sentinel; differencing against it charges the raw
+	 * counter to this thread.
+	 */
+	if (cpu == _current_cpu && cpu->usage0 != 0) {
 		uint32_t  now = usage_now();
 		uint32_t cycles = now - cpu->usage0;
 
@@ -147,7 +150,7 @@ void z_sched_cpu_usage(uint8_t cpu_id, struct k_thread_runtime_stats *stats)
 		sched_cpu_update_usage(cpu, cycles);
 
 		cpu->usage0 = now;
-	} else if (cpu->usage->track_usage) {
+	} else if (cpu != _current_cpu && cpu->usage->track_usage) {
 		/*
 		 * Getting stats for another CPU. Its counters only advance when
 		 * it context switches or reports on itself, so the time it has
@@ -196,8 +199,8 @@ void z_sched_thread_usage(struct k_thread *thread,
 	key = k_spin_lock(&usage_lock);
 	cpu = _current_cpu;
 
-
-	if (thread == cpu->current) {
+	/* same sentinel as z_sched_cpu_usage() above */
+	if (thread == cpu->current && cpu->usage0 != 0) {
 		uint32_t now = usage_now();
 		uint32_t cycles = now - cpu->usage0;
 
@@ -286,7 +289,8 @@ int k_thread_runtime_stats_disable(k_tid_t  thread)
 	if (thread->base.usage.track_usage) {
 		thread->base.usage.track_usage = false;
 
-		if (thread == cpu->current) {
+		/* same sentinel as z_sched_cpu_usage() above */
+		if (thread == cpu->current && cpu->usage0 != 0) {
 			uint32_t now = usage_now();
 			uint32_t cycles = now - cpu->usage0;
 

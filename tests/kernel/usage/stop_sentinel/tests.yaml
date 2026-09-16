@@ -1,0 +1,6 @@
+tests:
+  kernel.usage.stop_sentinel:
+    tags: kernel
+    filter: not CONFIG_SMP
+    integration_platforms:
+      - native_sim
