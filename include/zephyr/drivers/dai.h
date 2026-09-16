@@ -120,6 +120,7 @@ enum dai_type {
 	DAI_INTEL_UAOL,      /**< Intel UAOL */
 	DAI_AMD_SDW,         /**< AMD SoundWire */
 	DAI_AMD_TDM,         /**< AMD TDM */
+	DAI_TI_MCASP,        /**< TI Multichannel Audio Serial Port */
 };
 
 /**
