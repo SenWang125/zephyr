@@ -1,0 +1,36 @@
+#  Copyright (c) 2026 Texas Instruments Incorporated
+#  SPDX-License-Identifier: Apache-2.0
+#
+
+config ARCH
+	string
+	default "c7x" if C7X
+
+if C7X
+
+config CPU_C7504
+	bool
+	select CPU_HAS_MMU
+	select MMU
+	help
+	  This option signifies the use of a C7504 (C7x256v) DSP core.
+
+menu "C7x Architecture Options"
+
+config C7X_DBG_TRACE
+	bool "Exception debug trace"
+	help
+	  The reset and NME vectors record a trace and
+	  the faulting RP in c7x_dbg_trace before halting. Without this the
+	  vectors record nothing when halted.
+
+config C7X_OPTIMIZED_STRING
+	bool "Vector memcpy/memset"
+	default y
+	select MINIMAL_LIBC_ARCH_MEMCPY_MEMSET if MINIMAL_LIBC
+	help
+	  Provides more optimal C7x vector implementations of memcpy() and memset()
+	  in place of minimal libc's byte loops.
+endmenu
+
+endif # C7X

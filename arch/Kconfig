@@ -232,6 +232,20 @@ config RX
 	help
 	  Renesas RX architecture
 
+config C7X
+	bool
+	select ARCH_IS_SET
+	select 64BIT
+	select ARCH_SUPPORTS_COREDUMP
+	select ARCH_SUPPORTS_COREDUMP_STACK_PTR
+	select ARCH_HAS_CUSTOM_BUSY_WAIT
+	select ATOMIC_OPERATIONS_C
+	select BARRIER_OPERATIONS_ARCH
+	select USE_SWITCH
+	select USE_SWITCH_SUPPORTED
+	help
+	  TI C7x VLIW DSP architecture
+
 config ARCH_IS_SET
 	bool
 	help

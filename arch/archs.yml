@@ -35,3 +35,6 @@ archs:
   - name: hexagon
     path: hexagon
     full_name: Qualcomm Hexagon
+  - name: c7x
+    path: c7x
+    full_name: TI C7x
