@@ -1073,6 +1073,31 @@ C library:
     - cpp
     - sample.cpp
 
+C7x arch:
+  status: maintained
+  maintainers:
+    - SenWang125
+  files:
+    - arch/c7x/
+    - include/zephyr/arch/c7x/
+    - cmake/linker_script/c7x/
+    - soc/ti/k3/common/c7x/
+    - boards/ti/am62d_evm/
+    - dts/c7x/
+    - dts/vendor/ti/k3-am62x-c7x-main.dtsi
+    - dts/bindings/interrupt-controller/ti,c7x-clec.yaml
+    - dts/bindings/mbox/ti,omap-mailbox-c7x.yaml
+    - drivers/dai/ti/mcasp/
+    - drivers/interrupt_controller/*c7x*
+    - drivers/mbox/*c7x*
+    - drivers/timer/*c7x*
+    - tests/arch/c7x/
+  labels:
+    - "area: C7x"
+  tests:
+    - arch
+    - kernel
+
 CMSIS API layer:
   status: odd fixes
   collaborators:
@@ -6433,6 +6458,18 @@ Tests:
     - cmake/toolchain/
     - include/zephyr/toolchain/
     - include/zephyr/toolchain.h
+  labels:
+    - "area: Toolchains"
+
+"Toolchain TI C7000 CGT":
+  status: maintained
+  maintainers:
+    - SenWang125
+  files:
+    - cmake/*/cl7x/
+    - include/zephyr/toolchain/cl7x.h
+    - include/zephyr/toolchain/cl7x/
+    - doc/develop/toolchains/ti_c7000_cgt.rst
   labels:
     - "area: Toolchains"
 
