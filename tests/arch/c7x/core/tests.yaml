@@ -1,0 +1,4 @@
+tests:
+  arch.c7x.core:
+    platform_allow: am62d_evm/am62d2/c71_0
+    tags: arch
