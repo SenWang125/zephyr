@@ -53,6 +53,7 @@ $defs:
           - arc
           - arm
           - arm64
+          - c7x
           - hexagon
           - mips
           - nios2

@@ -14,10 +14,15 @@ intended for use in assembly code.
 
 import argparse
 import os
+import re
 import sys
 
 from elftools.elf.elffile import ELFFile
 from elftools.elf.sections import SymbolTableSection
+
+EM_TI_C7X = 145
+
+C7X_STATIC_SUFFIX_RE = re.compile(r'\$\d+$')
 
 
 def get_symbol_table(obj):
@@ -44,18 +49,36 @@ def gen_offset_header(input_file, output_file):
     )
 
     obj = ELFFile(input_file)
+    size_encoded = obj.header['e_machine'] == EM_TI_C7X
+    emitted = set()
+
     for sym in get_symbol_table(obj).iter_symbols():
         if isinstance(sym.name, bytes):
             sym.name = str(sym.name, 'ascii')
 
-        if not sym.name.endswith(('_OFFSET', '_SIZEOF')):
-            continue
-        if sym.entry['st_shndx'] != 'SHN_ABS':
-            continue
-        if sym.entry['st_info']['bind'] != 'STB_GLOBAL':
+        name = sym.name
+        if size_encoded:
+            if ':' in name:
+                continue
+            name = C7X_STATIC_SUFFIX_RE.sub('', name)
+
+        if not name.endswith(('_OFFSET', '_SIZEOF')):
             continue
 
-        output_file.write(f"#define {sym.name} 0x{sym.entry['st_value']:x}\n")
+        if sym.entry['st_shndx'] == 'SHN_ABS':
+            if sym.entry['st_info']['bind'] != 'STB_GLOBAL':
+                continue
+            value = sym.entry['st_value']
+        elif size_encoded and sym.entry['st_size'] > 0:
+            value = sym.entry['st_size'] - 1
+        else:
+            continue
+
+        if name in emitted:
+            continue
+        emitted.add(name)
+
+        output_file.write(f"#define {name} 0x{value:x}\n")
 
     output_file.write(f"\n#endif /* {include_guard} */\n")
 
