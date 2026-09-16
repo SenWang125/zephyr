@@ -14,3 +14,9 @@ add_custom_command(
 )
 
 target_sources(app PRIVATE src/main.c src/regtest.c ${REGTEST_ASM})
+
+# The board has no UART: printk reaches the host through the c7x-sof trace ring,
+# which the resource table exposes as remoteproc's trace0.
+if(ZEPHYR_C7X_SOF_MODULE_DIR)
+  target_sources(app PRIVATE ${ZEPHYR_C7X_SOF_MODULE_DIR}/src/lib/trace_printk.c)
+endif()
