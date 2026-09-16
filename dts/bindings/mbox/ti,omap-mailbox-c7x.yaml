@@ -1,0 +1,26 @@
+# Copyright (c) 2026 Texas Instruments Incorporated
+# SPDX-License-Identifier: Apache-2.0
+
+title: TI OMAP mailbox, C7x side
+
+description: |
+  TI HW mailbox (OMAP-style) as seen by the C7x DSP. One fifo carries
+  C7x->host kicks, the next carries host->C7x kicks; the message is the
+  caller's 32-bit payload, or 0 for a NULL doorbell, as in ti,omap-mailbox.
+  Rx is polled unless CONFIG_MBOX_TI_OMAP_C7X_IRQ takes the interrupt named
+  here.
+
+compatible: "ti,omap-mailbox-c7x"
+
+include: [base.yaml, mailbox-controller.yaml]
+
+properties:
+  reg:
+    required: true
+
+  interrupts:
+    description: CLEC route of the host->C7x fifo's new-message event.
+
+
+mbox-cells:
+  - channel

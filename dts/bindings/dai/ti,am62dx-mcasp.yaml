@@ -1,0 +1,120 @@
+# Copyright (c) 2026 Texas Instruments Incorporated
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  TI McASP as a DAI, the Linux davinci-mcasp binding
+  (Documentation/devicetree/bindings/sound/davinci-mcasp-audio.yaml) property
+  for property. Precedence, highest first:
+
+    1. the simple-audio-card dai-link whose cpu is this node, per direction
+       (playback-only / capture-only links, as on the AM62D EVM): format, clock
+       and frame-sync provider, bit-clock and frame inversion, and on its cpu
+       end dai-tdm-slot-num / dai-tdm-slot-width (snd_soc_of_parse_tdm_slot);
+    2. this node, board .dts over SoC .dtsi (op-mode, tdm-slots, tdm-slots-rx,
+       serial-dir, ti,async-mode, tx/rx-num-evt, dismod, clocks);
+    3. the stream: the IPC4 copier blob's tdm slots and slot width, then the
+       sample width;
+    4. the driver defaults, which are davinci-mcasp's: AFIFO off when
+       tx/rx-num-evt is absent, DISMOD drive-low, dsp_a with normal clocks and
+       the McASP providing both clocks.
+
+  Nothing about the wire is a literal in the driver.
+
+compatible: "ti,am62dx-mcasp"
+
+include: base.yaml
+
+properties:
+  reg:
+    required: true
+
+  reg-names:
+    required: true
+    description: '"mpu" (control registers) and "dat" (data port).'
+
+  interrupts:
+    description: |
+      TX and RX interrupts through the CLEC, <event irq priority flags> each.
+      The AM62 McASP2 lines are GIC SPI 240 (tx) and 239 (rx); the CLEC input is
+      the SPI number plus 256.
+
+  interrupt-names:
+    description: '"tx", "rx", exactly as the Linux node.'
+
+  op-mode:
+    type: int
+    enum: [0, 1]
+    description: 0 = I2S/TDM, 1 = DIT. Only 0 is implemented.
+
+  tdm-slots:
+    type: int
+    description: TX slots per frame (RX too unless tdm-slots-rx is given).
+
+  tdm-slots-rx:
+    type: int
+    description: RX slots per frame; needs ti,async-mode.
+
+  ti,async-mode:
+    type: boolean
+    description: |
+      TX and RX run on their own clocks and frame syncs (ACLKXCTL.ASYNC = 1).
+      Absent = synchronous, RX slaves to the TX clock.
+
+  serial-dir:
+    type: array
+    required: true
+    description: |
+      Per-serializer direction, one entry per serializer, exactly as the
+      Linux binding: 0 = inactive, 1 = TX, 2 = RX.
+
+  tx-num-evt:
+    type: int
+    description: |
+      TX AFIFO event threshold (WNUMEVT, 32-bit words). 0 or absent = AFIFO
+      off, as davinci-mcasp. The TI RTOS SDK default is 32.
+
+  rx-num-evt:
+    type: int
+    description: |
+      RX AFIFO event threshold (RNUMEVT, 32-bit words). 0 or absent = AFIFO
+      off, as davinci-mcasp. The TI RTOS SDK default is 32.
+
+  dismod:
+    type: int
+    enum: [0, 2, 3]
+    description: |
+      What a serializer drives while it is not transmitting, exactly as the
+      Linux binding: 0 = three-state, 2 = drive low, 3 = drive high.
+      Absent = 2, davinci-mcasp's default.
+
+  dmas:
+    type: phandle-array
+    description: TX/RX DMA (BCDMA PDMA thread specifier, as on Linux).
+
+  dma-names:
+    type: string-array
+    description: '"tx", "rx".'
+
+  clocks:
+    description: |
+      Functional/AUX clock as a TI-SCI <devid clkid> specifier, the same k3_clks
+      phandle the Linux node carries; applied at probe with the assigned-clock
+      properties below.
+
+  assigned-clocks:
+    type: phandle-array
+    specifier-space: clock
+    description: Clock to configure at probe (Linux assigned-clocks shape).
+
+  assigned-clock-parents:
+    type: phandle-array
+    specifier-space: clock
+    description: Parent for assigned-clocks[0] (clkid cell = parent index).
+
+  assigned-clock-rates:
+    type: array
+    description: Rate in Hz for assigned-clocks[0].
+
+  "#sound-dai-cells":
+    type: int
+    const: 0

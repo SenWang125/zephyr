@@ -41,3 +41,13 @@ config SOC_AM6232_A53
 config SOC_AM6232_M4
 	bool
 	select SOC_SERIES_AM62X_M4
+
+config SOC_SERIES_AM62X_C7X
+	bool
+	select SOC_SERIES_AM62X
+	help
+	  Enable support for AM62X C7x DSP Series.
+
+config SOC_AM62D2_C71_0
+	bool
+	select SOC_SERIES_AM62X_C7X

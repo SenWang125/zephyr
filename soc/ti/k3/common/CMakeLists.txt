@@ -2,9 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 zephyr_include_directories(peripherals)
-zephyr_sources(peripherals/ctrl_partitions.c)
+if(NOT CONFIG_SOC_SERIES_AM62X_C7X)
+  zephyr_sources(peripherals/ctrl_partitions.c)
+endif()
 
-if(CONFIG_SOC_SERIES_AM62X_A53 OR CONFIG_SOC_SERIES_AM62LX_A53)
+if(CONFIG_SOC_SERIES_AM62X_C7X)
+  add_subdirectory(c7x)
+elseif(CONFIG_SOC_SERIES_AM62X_A53 OR CONFIG_SOC_SERIES_AM62LX_A53)
   zephyr_sources(cortex_a/soc.c)
 
   set(SOC_LINKER_SCRIPT ${ZEPHYR_BASE}/include/zephyr/arch/arm64/scripts/linker.ld CACHE INTERNAL "")

@@ -1,0 +1,32 @@
+# Copyright (c) 2026 Texas Instruments Incorporated
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  TI K3 DMSS BCDMA (Block-Copy DMA) controller.
+
+  Node/specifier-compatible with the Linux ti,am64-dmss-bcdma binding
+  (k3-am62a-main.dtsi main_bcdma): the same customer devicetree configures
+  both OSes. Specifier: <type thread-id atype> (type 0 = split-TR channel
+  paired to a PDMA thread, e.g. McASP2 TX = 0xc502).
+
+compatible: "ti,am64-dmss-bcdma"
+
+include: base.yaml
+
+properties:
+  reg:
+    required: true
+  reg-names:
+    required: true
+  "#dma-cells":
+    type: int
+    required: true
+    const: 3
+  ti,sci-dev-id:
+    type: int
+    description: TISCI device id of the DMSS (26 on AM62x).
+
+dma-cells:
+  - type
+  - thread-id
+  - atype

@@ -9,8 +9,6 @@
 #include <zephyr/sys/device_mmio.h>
 #include <zephyr/arch/common/sys_io.h>
 
-#define KICK0_UNLOCK_VAL (0x68EF3490U)
-#define KICK1_UNLOCK_VAL (0xD172BC5AU)
 
 #define K3_UNLOCK_CONTROL_MODULE_(node_id)                                                         \
 	const uint32_t conf_##node_id[] = DT_PROP(node_id, ti_unlock_offsets);                     \
@@ -28,8 +26,8 @@
 #if DT_ANY_COMPAT_HAS_PROP_STATUS_OKAY(ti_control_module, ti_unlock_offsets)
 static void k3_unlock_partition(mem_addr_t kick0_address)
 {
-	sys_write32(KICK0_UNLOCK_VAL, kick0_address);
-	sys_write32(KICK1_UNLOCK_VAL, kick0_address + 4);
+	sys_write32(K3_CTRL_MMR_KICK0_UNLOCK_VAL, kick0_address);
+	sys_write32(K3_CTRL_MMR_KICK1_UNLOCK_VAL, kick0_address + 4);
 }
 #endif
 

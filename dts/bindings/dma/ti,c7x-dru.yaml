@@ -1,0 +1,44 @@
+# Copyright (c) 2026 Texas Instruments Incorporated
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  TI C7x Data Routing Unit (DRU), the UTC DMA inside the C7x compute cluster.
+  The only DMA on this SoC that can reach L2SRAM. Programmed with AutoInc3d
+  Transfer Requests; completion is signalled as a C7x event via CLEC.
+
+compatible: "ti,c7x-dru"
+
+include: dma-controller.yaml
+
+properties:
+  reg:
+    required: true
+    description: DRU register block and the CLEC block that routes its events.
+
+  reg-names:
+    required: true
+
+  ti,c7x-event:
+    type: int
+    required: true
+    description: C7x event number the DRU completion is routed to (EFR bit).
+
+  ti,local-event-start:
+    type: int
+    required: true
+    description: CLEC input index of DRU channel 0.
+
+  ti,handshake-region:
+    type: phandle
+    description: |
+      Non-cached memory the host uses to request a selftest or the offload
+      and to read the DRU statistics.
+
+  memory-regions:
+    type: phandles
+    description: |
+      Regions the DRU may use as a transfer endpoint. Anything outside them is
+      refused: a TR on Linux-owned memory took the host down twice.
+
+  "#dma-cells":
+    const: 0
