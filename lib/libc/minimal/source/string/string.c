@@ -283,6 +283,7 @@ void *memmove(void *d, const void *s, size_t n)
 	return d;
 }
 
+#if !defined(CONFIG_MINIMAL_LIBC_ARCH_MEMCPY_MEMSET)
 /**
  *
  * @brief Copy bytes in memory
@@ -388,6 +389,7 @@ void *memset(void *buf, int c, size_t n)
 
 	return buf;
 }
+#endif
 
 /**
  *

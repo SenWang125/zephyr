@@ -6462,9 +6462,13 @@ void k_heap_free(struct k_heap *h, void *mem) __attribute_nonnull(1);
 	((_Z_HEAP_C0(nb) + _Z_HEAP_AC(ab)) / ___z_heap_chunk_unit_SIZEOF)
 
 /* Bucket count from heap size in chunk units (mirrors bucket_idx() + 1) */
+#if TOOLCHAIN_HAS_CONSTEXPR_CLZ
 #define _Z_HEAP_NB(sz) \
 	(32 - __builtin_clz((unsigned int)((sz) - \
 	 ___z_heap_min_chunk_SIZEOF + 1)))
+#else
+#define _Z_HEAP_NB(sz) 32
+#endif
 
 /* 3-round convergent iteration starting from 1 bucket */
 #define _Z_HEAP_NB1(ab) _Z_HEAP_NB(_Z_HEAP_SZ(1, ab))

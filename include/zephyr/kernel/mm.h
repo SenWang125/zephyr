@@ -13,6 +13,8 @@
 #include <zephyr/arch/arm64/arm_mem.h>
 #elif defined(CONFIG_ARM_AARCH32_MMU)
 #include <zephyr/arch/arm/mmu/arm_mem.h>
+#elif defined(CONFIG_C7X)
+#include <zephyr/arch/c7x/c7x_mem.h>
 #endif /* CONFIG_ARM_MMU && CONFIG_ARM64 */
 
 #include <zephyr/kernel/internal/mm.h>

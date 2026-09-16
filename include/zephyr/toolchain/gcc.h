@@ -36,6 +36,10 @@
 
 #define TOOLCHAIN_HAS_ZLA 1
 
+#define TOOLCHAIN_HAS_ALLOCA 1
+
+#define TOOLCHAIN_HAS_CONSTEXPR_CLZ 1
+
 /*
  * Older versions of GCC do not define __BYTE_ORDER__, so it must be manually
  * detected and defined using arch-specific definitions.

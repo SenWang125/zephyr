@@ -278,11 +278,21 @@ extern "C" {
  * @param field the name of the field within the struct @p ptr points to
  * @return a pointer to the structure that contains @p ptr
  */
+#if TOOLCHAIN_HAS_STMT_EXPR
 #define CONTAINER_OF(ptr, type, field)                                                             \
 	({                                                                                         \
 		CONTAINER_OF_VALIDATE(ptr, type, field)                                            \
 		((type *)(((char *)(ptr)) - offsetof(type, field)));                               \
 	})
+#elif !defined(__cplusplus)
+/* Plain-expression form, for a toolchain without TOOLCHAIN_HAS_STMT_EXPR. */
+#define CONTAINER_OF(ptr, type, field)                                                             \
+	((void)sizeof(char[1 - 2 * !(SAME_TYPE(*(ptr), ((type *)0)->field) ||                      \
+				     SAME_TYPE(*(ptr), void))]),                                   \
+	 (type *)(((char *)(ptr)) - offsetof(type, field)))
+#else
+#define CONTAINER_OF(ptr, type, field) ((type *)(((char *)(ptr)) - offsetof(type, field)))
+#endif
 
 /**
  * @brief Report the size of a struct field in bytes.

@@ -51,6 +51,8 @@
  * and therefore this header is not meant to exist in-tree
  */
 #include <toolchain/other.h>
+#elif defined(__C7000__)
+#include <zephyr/toolchain/cl7x.h>
 #elif defined(__XCC__)
 #include <zephyr/toolchain/xcc.h>
 #elif defined(__CCAC__)
@@ -132,11 +134,48 @@
 #endif
 
 /**
+ * @def TOOLCHAIN_HAS_ALLOCA
+ * @brief Indicate if toolchain provides alloca().
+ */
+#ifndef TOOLCHAIN_HAS_ALLOCA
+#define TOOLCHAIN_HAS_ALLOCA 0
+#endif
+
+/**
  * @def TOOLCHAIN_HAS_ZLA
  * @brief Indicate if toolchain supports Zero Length Arrays.
  */
 #ifndef TOOLCHAIN_HAS_ZLA
 #define TOOLCHAIN_HAS_ZLA 0
+#endif
+
+/**
+ * @def TOOLCHAIN_HAS_CONSTEXPR_CLZ
+ * @brief Indicate if __builtin_clz() of a constant folds to an integer
+ * constant expression, usable in a static initializer.
+ */
+#ifndef TOOLCHAIN_HAS_CONSTEXPR_CLZ
+#define TOOLCHAIN_HAS_CONSTEXPR_CLZ 0
+#endif
+
+/**
+ * @def TOOLCHAIN_HAS_STMT_EXPR
+ * @brief Indicate that the toolchain compiles a GNU statement expression
+ * correctly wherever its value is used, including as a loop induction
+ * variable. A toolchain that does not must define this as 0 so that macros
+ * which would otherwise use one fall back to a plain expression form.
+ */
+#ifndef TOOLCHAIN_HAS_STMT_EXPR
+#define TOOLCHAIN_HAS_STMT_EXPR 1
+#endif
+
+/**
+ * @def TOOLCHAIN_HAS_VARIABLE_ALIAS
+ * @brief Indicate that the toolchain accepts __attribute__((alias)) on a
+ * variable, not only on a function.
+ */
+#ifndef TOOLCHAIN_HAS_VARIABLE_ALIAS
+#define TOOLCHAIN_HAS_VARIABLE_ALIAS 1
 #endif
 
 /**

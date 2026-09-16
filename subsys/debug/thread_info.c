@@ -80,6 +80,8 @@ const size_t _kernel_thread_info_offsets[] = {
 #elif defined(CONFIG_OPENRISC)
 	[THREAD_INFO_OFFSET_T_STACK_PTR] = offsetof(struct k_thread,
 						callee_saved.r1),
+#elif defined(CONFIG_C7X)
+	[THREAD_INFO_OFFSET_T_STACK_PTR] = offsetof(struct k_thread, switch_handle),
 
 #elif defined(CONFIG_RISCV)
 	[THREAD_INFO_OFFSET_T_STACK_PTR] = offsetof(struct k_thread,
@@ -172,15 +174,21 @@ const size_t _kernel_thread_info_offsets[] = {
 	[THREAD_INFO_OFFSET_NUM_CPUS] = CONFIG_MP_MAX_NUM_CPUS,
 };
 
+#if TOOLCHAIN_HAS_VARIABLE_ALIAS
 extern const size_t __attribute__((alias("_kernel_thread_info_offsets")))
 		_kernel_openocd_offsets[ARRAY_SIZE(_kernel_thread_info_offsets)];
+#endif
 
 __attribute__((used, section(".dbg_thread_info")))
 const size_t _kernel_thread_info_num_offsets = ARRAY_SIZE(_kernel_thread_info_offsets);
+#if TOOLCHAIN_HAS_VARIABLE_ALIAS
 extern const size_t __attribute__((alias("_kernel_thread_info_num_offsets")))
 		_kernel_openocd_num_offsets;
+#endif
 
 __attribute__((used, section(".dbg_thread_info")))
 const uint8_t _kernel_thread_info_size_t_size = (uint8_t)sizeof(size_t);
+#if TOOLCHAIN_HAS_VARIABLE_ALIAS
 extern const uint8_t __attribute__((alias("_kernel_thread_info_size_t_size")))
 		_kernel_openocd_size_t_size;
+#endif

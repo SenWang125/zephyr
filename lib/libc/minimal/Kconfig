@@ -27,6 +27,12 @@ config MINIMAL_LIBC_OPTIMIZE_STRING_FOR_SIZE
 	  Enable smaller but potentially slower implementations of memcpy and
 	  memset. On the Cortex-M0+ this reduces the total code size by 120 bytes.
 
+config MINIMAL_LIBC_ARCH_MEMCPY_MEMSET
+	bool
+	help
+	  The architecture provides memcpy() and memset(), so minimal libc
+	  does not build its own.
+
 config MINIMAL_LIBC_RAND
 	bool "Rand and srand functions"
 	help

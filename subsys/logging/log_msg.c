@@ -13,6 +13,17 @@
 #include <zephyr/llext/symbol.h>
 LOG_MODULE_DECLARE(log);
 
+#if TOOLCHAIN_HAS_ALLOCA
+#define Z_LOG_STACK_BUF_DECL(name, wlen)
+#define Z_LOG_STACK_ALLOC(name, size) LOG_MSG_ALIGNED_ALLOCA(size)
+#else
+/* A VLA has the same lifetime as the alloca it replaces here. */
+#define Z_LOG_STACK_BUF_DECL(name, wlen) \
+	long long name[DIV_ROUND_UP((wlen) * sizeof(int), sizeof(long long))] \
+		__aligned(Z_LOG_MSG_ALIGNMENT)
+#define Z_LOG_STACK_ALLOC(name, size) ((void *)(name))
+#endif
+
 BUILD_ASSERT(sizeof(struct log_msg_desc) == sizeof(uint32_t),
 	     "Descriptor must fit in 32 bits");
 
@@ -410,21 +421,22 @@ void z_log_msg_runtime_vcreate(uint8_t domain_id, const void *source,
 	uint8_t *pkg;
 	struct log_msg_desc desc =
 		Z_LOG_MSG_DESC_INITIALIZER(domain_id, level, plen, dlen);
+	Z_LOG_STACK_BUF_DECL(stack_buf, msg_wlen);
 
 	if (k_is_user_context()) {
-		pkg = LOG_MSG_ALIGNED_ALLOCA(plen);
+		pkg = Z_LOG_STACK_ALLOC(stack_buf, plen);
 		msg = NULL;
 	} else if (IS_ENABLED(CONFIG_LOG_MODE_DEFERRED) && BACKENDS_IN_USE()) {
 		compiler_barrier();
 		msg = z_log_msg_alloc(msg_wlen);
 		if (IS_ENABLED(CONFIG_LOG_FRONTEND) && msg == NULL) {
-			pkg = LOG_MSG_ALIGNED_ALLOCA(plen);
+			pkg = Z_LOG_STACK_ALLOC(stack_buf, plen);
 		} else {
 			pkg = msg ? msg->data : NULL;
 		}
 	} else {
 		compiler_barrier();
-		msg = LOG_MSG_ALIGNED_ALLOCA(msg_wlen * sizeof(int));
+		msg = Z_LOG_STACK_ALLOC(stack_buf, msg_wlen * sizeof(int));
 		pkg = msg->data;
 	}
 
