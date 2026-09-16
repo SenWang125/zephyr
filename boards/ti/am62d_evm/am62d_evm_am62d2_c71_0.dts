@@ -1,0 +1,120 @@
+/*
+ * Copyright (c) 2025-2026 Texas Instruments Incorporated
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/dts-v1/;
+
+#include <ti/ti_am62x_c7504.dtsi>
+#include <zephyr/dt-bindings/interrupt-controller/ti-c7x-clec.h>
+
+/ {
+	model = "TI AM62D2 EVM C7504 DSP";
+	compatible = "ti,am62d2-evm";
+
+	chosen {
+		zephyr,sram = &ddr_fw;
+		zephyr,flash = &ddr_fw;
+		zephyr,console = &main_uart0;
+		zephyr,shell-uart = &main_uart0;
+		zephyr,ipc = &ipc0;
+		zephyr,ipc_shm = &ddr_ipc;
+	};
+
+	/* A53 DDR: declared, never allocated into, so a stray placement fails the link */
+	ddr0_reserved: memory@80000000 {
+		compatible = "zephyr,memory-region", "mmio-sram";
+		reg = <0x00 0x80000000 0x00 0x19800000>;
+		zephyr,memory-region = "DDR0_RESERVED";
+		zephyr,memory-region-flags = "";
+	};
+
+	ddr_ipc: memory@99800000 {
+		compatible = "zephyr,memory-region", "mmio-sram";
+		reg = <0x00 0x99800000 0x00 0x00100000>;
+		zephyr,memory-region = "IPC_VRING";
+		zephyr,memory-region-flags = "rw";
+	};
+
+	rsc_table: memory@99900000 {
+		compatible = "zephyr,memory-region", "mmio-sram";
+		reg = <0x00 0x99900000 0x00 0x00000400>;
+		zephyr,memory-region = "IPC_RSC";
+		zephyr,memory-region-flags = "rw";
+	};
+
+	trace_buf: memory@99900400 {
+		compatible = "zephyr,memory-region", "mmio-sram";
+		reg = <0x00 0x99900400 0x00 0x0000fc00>;
+		zephyr,memory-region = "TRACE";
+		zephyr,memory-region-flags = "rw";
+	};
+
+	diag_band: memory@99910000 {
+		compatible = "zephyr,memory-region", "mmio-sram";
+		reg = <0x00 0x99910000 0x00 0x00010000>;
+		zephyr,memory-region = "DIAG";
+		zephyr,memory-region-flags = "rw";
+	};
+
+	vectors: memory@99c00000 {
+		compatible = "zephyr,memory-region", "mmio-sram";
+		reg = <0x00 0x99c00000 0x00 0x00010000>;
+		zephyr,memory-region = "VECTORS";
+		zephyr,memory-region-flags = "rx";
+	};
+
+	fw_sram: memory@99c10000 {
+		compatible = "zephyr,memory-region", "mmio-sram";
+		reg = <0x00 0x99c10000 0x00 0x004f0000>;
+		zephyr,memory-region = "SRAM";
+		zephyr,memory-region-flags = "rwx";
+	};
+
+	/* firmware DDR past the resource table page */
+	ddr_fw: memory@99901000 {
+		compatible = "mmio-sram";
+		reg = <0x00 0x99901000 0x00 0x00eff000>;
+	};
+
+	stacks: memory@9a100000 {
+		compatible = "zephyr,memory-region", "mmio-sram";
+		reg = <0x00 0x9a100000 0x00 0x00700000>;
+		zephyr,memory-region = "STACKS";
+		zephyr,memory-region-flags = "rw";
+	};
+
+	ipc0: ipc0 {
+		compatible = "zephyr,ipc-openamp-static-vrings";
+		memory-region = <&ddr_ipc>;
+		mboxes = <&mailbox_c7x 1>, <&mailbox_c7x 0>;
+		mbox-names = "rx", "tx";
+		role = "remote";
+		status = "okay";
+	};
+};
+
+/* k3-am62d2-evm.dts &mcasp2, plus the C7x clock request */
+&mcasp2 {
+	status = "okay";
+	#sound-dai-cells = <0>;
+
+	clocks = <&k3_clks 192 0>;
+	assigned-clocks = <&k3_clks 192 0>;
+	assigned-clock-parents = <&k3_clks 192 2>;
+	assigned-clock-rates = <320000000>;
+
+	op-mode = <0>;          /* MCASP_IIS_MODE */
+	tdm-slots = <2>;
+	tdm-slots-rx = <8>;
+	ti,async-mode;
+	serial-dir = <
+	       1 1 0 1
+	       1 0 0 0
+	       0 0 0 0
+	       0 0 2 0
+	>;
+	/* TI RTOS SDK norm; the Linux EVM leaves both absent (AFIFO off). */
+	tx-num-evt = <32>;
+	rx-num-evt = <32>;
+};

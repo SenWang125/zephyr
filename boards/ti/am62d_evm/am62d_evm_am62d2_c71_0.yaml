@@ -1,0 +1,14 @@
+identifier: am62d_evm/am62d2/c71_0
+name: TI AM62D2 EVM C7504 DSP Core
+type: mcu
+arch: c7x
+toolchain:
+  - cl7x
+testing:
+  default: false
+  ignore_tags:
+    - net
+    - bluetooth
+    - cpp
+ram: 16384
+vendor: ti
