@@ -8,7 +8,7 @@
 #include <zephyr/arch/c7x/arch.h>
 #include <zephyr/tracing/tracing.h>
 
-/* No wait instruction. IDLE does not reliably wake, so the idle loop spins. */
+/* No WAIT instruction available. IDLE instruction is not used as it touches the power state  */
 static ALWAYS_INLINE void c7x_idle(unsigned int key)
 {
 #if defined(CONFIG_TRACING)
