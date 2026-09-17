@@ -796,8 +796,20 @@ static inline int64_t sign_extend_64(uint64_t value, uint8_t index)
 	return (int64_t)(value << shift) >> shift;
 }
 
+#if TOOLCHAIN_HAS_CONSTEXPR_CLZ
 #define __z_log2d(x) (32 - __builtin_clz(x) - 1)
 #define __z_log2q(x) (64 - __builtin_clzll(x) - 1)
+#else
+/* __builtin_clz() is a call here, so fold the exponent with comparisons. */
+#define __Z_LOG2_2(x)  (((x) >= (1U << 1)) ? 1 : 0)
+#define __Z_LOG2_4(x)  (((x) >= (1U << 2)) ? (2 + __Z_LOG2_2((x) >> 2)) : __Z_LOG2_2(x))
+#define __Z_LOG2_8(x)  (((x) >= (1U << 4)) ? (4 + __Z_LOG2_4((x) >> 4)) : __Z_LOG2_4(x))
+#define __Z_LOG2_16(x) (((x) >= (1U << 8)) ? (8 + __Z_LOG2_8((x) >> 8)) : __Z_LOG2_8(x))
+#define __Z_LOG2_32(x) (((x) >= (1U << 16)) ? (16 + __Z_LOG2_16((x) >> 16)) : __Z_LOG2_16(x))
+#define __Z_LOG2_64(x) (((x) >= (1ULL << 32)) ? (32 + __Z_LOG2_32((unsigned long long)(x) >> 32)) : __Z_LOG2_32(x))
+#define __z_log2d(x) __Z_LOG2_32(x)
+#define __z_log2q(x) __Z_LOG2_64(x)
+#endif
 #define __z_log2(x)  (sizeof(__typeof__(x)) > 4 ? __z_log2q(x) : __z_log2d(x))
 
 /**
