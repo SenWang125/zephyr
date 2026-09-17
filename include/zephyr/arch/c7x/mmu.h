@@ -31,6 +31,8 @@
 #define C7X_MMU_UXN		((uint64_t)1 << 54)
 
 #define C7X_MMU_ENTRIES		512U
+#define C7X_MMU_LEVELS		4U
+#define C7X_MMU_LAST_LEVEL	(C7X_MMU_LEVELS - 1U)
 #define C7X_MMU_INDEX_MASK	(C7X_MMU_ENTRIES - 1U)
 #define C7X_MMU_LEVEL_SHIFT(l)	(39U - 9U * (l))
 #define C7X_MMU_PAGE_SHIFT	12U

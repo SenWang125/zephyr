@@ -18,6 +18,9 @@
 
 LOG_MODULE_DECLARE(os, CONFIG_KERNEL_LOG_LEVEL);
 
+BUILD_ASSERT(C7X_MMU_LEVEL_SHIFT(C7X_MMU_LAST_LEVEL) == C7X_MMU_PAGE_SHIFT,
+	     "C7x MMU level count does not match the page shift");
+
 #define C7X_MMU_POOL_BYTES	(C7X_MMU_POOL_WORDS * sizeof(uint32_t))
 
 #define BLK_BASE       (C7X_MMU_DESC_BLOCK | C7X_MMU_NS | C7X_MMU_AP_PRW | C7X_MMU_SH_OUTER | \
@@ -477,16 +480,18 @@ int arch_page_phys_get(void *virt, uintptr_t *phys)
 	uint64_t e = 0U;
 	unsigned int level;
 
-	for (level = 0U; level < 4U; level++) {
+	for (level = 0U; level < C7X_MMU_LEVELS; level++) {
 		uint32_t idx = (uint32_t)((va >> C7X_MMU_LEVEL_SHIFT(level)) & C7X_MMU_INDEX_MASK);
 		uint64_t out_mask = ((uint64_t)1 << C7X_MMU_LEVEL_SHIFT(level)) - 1U;
 
 		e = c7x_mmu_read_entry(table, idx);
 		if ((e & C7X_MMU_DESC_TYPE_MASK) == C7X_MMU_DESC_INVALID ||
-		    (level == 3U && (e & C7X_MMU_DESC_TYPE_MASK) != C7X_MMU_DESC_PAGE)) {
+		    (level == C7X_MMU_LAST_LEVEL &&
+		     (e & C7X_MMU_DESC_TYPE_MASK) != C7X_MMU_DESC_PAGE)) {
 			return -EFAULT;
 		}
-		if (level == 3U || (e & C7X_MMU_DESC_TYPE_MASK) == C7X_MMU_DESC_BLOCK) {
+		if (level == C7X_MMU_LAST_LEVEL ||
+		    (e & C7X_MMU_DESC_TYPE_MASK) == C7X_MMU_DESC_BLOCK) {
 			if (phys != NULL) {
 				*phys = (uintptr_t)(((e & ~C7X_MMU_UPPER_ATTRS) & ~out_mask) |
 						    (va & out_mask));
