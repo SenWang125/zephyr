@@ -70,7 +70,6 @@ void c7x_isr_handler(unsigned int evt_id)
 #endif
 }
 
-
 void c7x_isr_exit_resched(void)
 {
 	if (_current_cpu->nested == 0) {
@@ -91,7 +90,7 @@ void c7x_isr_exit_resched(void)
 }
 
 #ifdef CONFIG_DYNAMIC_INTERRUPTS
-/* Installs the ISR and sets the priority, as ARCH_IRQ_CONNECT does. 
+/* Installs the ISR and sets the priority, as ARCH_IRQ_CONNECT does.
  * Note the driver still has to acquire/route the event via c7x_clec_irq_enable().
  */
 int arch_irq_connect_dynamic(unsigned int irq, unsigned int priority,
