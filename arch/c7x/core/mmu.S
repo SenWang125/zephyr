@@ -1,6 +1,16 @@
 ; Copyright (c) 2026 Texas Instruments Incorporated
 ; SPDX-License-Identifier: Apache-2.0
 
+;
+;  Assembly helpers in mmu.S:
+;    c7x_mmu_mair_set(index, value)  -- set one MAR byte
+;    c7x_mmu_tcr_set(tcr)            -- set TCR0
+;    c7x_mmu_tbr0_set(table_ptr)     -- set TBR0 (L0 table base)
+;    c7x_mmu_tlb_inv()               -- L1DWBINV + TLB_INV
+;    c7x_l1d_wbinv()                 -- L1DWBINV alone (TLB_INV faults at CXM=3)
+;    c7x_mmu_enable()                -- OR enable bits into SCR
+;
+
         .global c7x_mmu_mair_set
         .sect   ".text:c7x_mmu_mair_set"
         .asmfunc
