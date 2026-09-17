@@ -72,13 +72,9 @@ __noinline int arch_dcache_invd_all(void)
 	return 0;
 }
 
-__noinline int arch_dcache_flush_and_invd_all(void)
+int arch_dcache_flush_and_invd_all(void)
 {
-	/* writeback + invalidate (set L1DWBINV, ECR259) */
-	__asm__ volatile (" MVKU32 .S1 1, A1\n"
-			  " NOP 4\n"
-			  " MVC .S1 A1, L1DWBINV\n"
-			  " NOP 8\n");
+	c7x_l1d_wbinv(C7X_L1D_WBINV_ALL);
 	return 0;
 }
 
