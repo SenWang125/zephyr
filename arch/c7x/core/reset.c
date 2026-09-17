@@ -8,6 +8,9 @@
 #include <zephyr/arch/c7x/cpu.h>
 #include <kernel_internal.h>
 
+/* TI's compiler exposes the architectural stack pointer as __SP. */
+register volatile uint64_t __SP;
+
 /* Reset entry. Set SP as position independent, before handing to boot flow. */
 #pragma CODE_SECTION(_c_int00_secure, ".text:_c_int00_secure")
 FUNC_NORETURN void _c_int00_secure(void)

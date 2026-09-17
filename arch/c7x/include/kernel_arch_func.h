@@ -14,9 +14,6 @@ extern "C" {
 
 #ifndef _ASMLANGUAGE
 
-/* the stack pointer, for the reset entry and the boot-stack paint */
-register volatile uint64_t __SP;
-
 static ALWAYS_INLINE void arch_kernel_init(void)
 {
 }
