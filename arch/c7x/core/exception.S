@@ -404,22 +404,22 @@ _isr_wrapper:
 ||      STD     .D1     A3, *SP(||ISR_VEC_SCALAR_SP_OFF||)
         VMV     .S2     VBL0, VB0
 ||      VST4D   .D2     VB1,  *SP(||ISR_VEC_VB1_OFF||)
-||      ADDD    .D1     SP, ||ISR_VEC_SA0_OFF||, A3 ;D15 is the SP register, per compiler ABI
+||      ADDD    .D1     SP, ||ISR_VEC_SA0_OFF||, A3
         VST4D   .D2     VB2,  *SP(||ISR_VEC_VB2_OFF||)
 ||      VMV     .S2     VBL5, VB1
-||      ADDD    .D1     SP, ||ISR_VEC_SA1_OFF||, A5 ;D15 is the SP register, per compiler ABI
+||      ADDD    .D1     SP, ||ISR_VEC_SA1_OFF||, A5
         VST4D   .D2     VB3,  *SP(||ISR_VEC_VB3_OFF||)
 ||      VMV     .S2     VBL6, VB2
-||      ADDD    .D1     SP, ||ISR_VEC_SA2_OFF||, A6 ;D15 is the SP register, per compiler ABI
+||      ADDD    .D1     SP, ||ISR_VEC_SA2_OFF||, A6
         VST4D   .D2     VB0, *SP(||ISR_VEC_VBL0_OFF||)
 ||      VMV     .S2     VBL7, VB3
-||      ADDD    .D1     SP, ||ISR_VEC_SA3_OFF||, A7 ;D15 is the SP register, per compiler ABI
+||      ADDD    .D1     SP, ||ISR_VEC_SA3_OFF||, A7
         VMV     .S2     VBL1, VB0
 ||      VST4D   .D2     VB4,  *SP(||ISR_VEC_VB4_OFF||)
-||      ADDD    .D1     SP, ||ISR_VEC_SE0_OFF||, A9 ;D15 is the SP register, per compiler ABI
+||      ADDD    .D1     SP, ||ISR_VEC_SE0_OFF||, A9
         VST4D   .D2     VB5,  *SP(||ISR_VEC_VB5_OFF||)
 ||      VMV     .M2     VBM0, VB4
-||      ADDD    .D1     SP, ||ISR_VEC_SE1_OFF||, A10 ;D15 is the SP register, per compiler ABI
+||      ADDD    .D1     SP, ||ISR_VEC_SE1_OFF||, A10
         VST4D   .D2     VB6,  *SP(||ISR_VEC_VB6_OFF||)
 ||      VMV     .M2     VBM1, VB5
 ||      sasavest .D1     *A3(0), 0
@@ -446,7 +446,7 @@ _isr_wrapper:
         VST4D   .D2     VB4, *SP(||ISR_VEC_VBM0_OFF||)
 ||      VMV     .M2     VBM4, VB8
         VST4D   .D2     VB0, *SP(||ISR_VEC_VBL3_OFF||)
-||      MVC     .C2     CUCR0, VB4              ; 2 cycle latency for CUCR regs
+||      MVC     .C2     CUCR0, VB4
         VST4D   .D2     VB5, *SP(||ISR_VEC_VBM1_OFF||)
 ||      VMV     .S2     VBL4, VB0
         VST4D   .D2     VB6, *SP(||ISR_VEC_VBM2_OFF||)
@@ -456,15 +456,15 @@ _isr_wrapper:
         VST4D   .D2     VB1, *SP(||ISR_VEC_VBM5_OFF||)
 ||      MVC     .C2     CUCR3, VB7
         VST4D   .D2     VB2, *SP(||ISR_VEC_VBM6_OFF||)
-||      MVC     .C2     CUCR5, VB1              ; 2 cycle latency for CUCR regs
+||      MVC     .C2     CUCR5, VB1
         VST4D   .D2     VB3, *SP(||ISR_VEC_VBM7_OFF||)
-||      MVC     .C2     CUCR6, VB2              ; 2 cycle latency for CUCR regs
-        MVC     .C2     CUCR7, VB3              ; 2 cycle latency for CUCR regs
+||      MVC     .C2     CUCR6, VB2
+        MVC     .C2     CUCR7, VB3
 ||      VST4D   .D2     VB0, *SP(||ISR_VEC_VBL4_OFF||)
         VST4D   .D2     VB8, *SP(||ISR_VEC_VBM4_OFF||)
 ||      MVPB    .L2     P0, B0
         VST4D   .D2     VB4, *SP(||ISR_VEC_CUCR0_OFF||)
-||      MVC     .C2     CUCR4, VB8              ; 2 cycle latency for CUCR regs
+||      MVC     .C2     CUCR4, VB8
         VST4D   .D2     VB5, *SP(||ISR_VEC_CUCR1_OFF||)
 ||      MVPB    .L2     P4, B4
 ||      STD     .D1X    B0, *SP(||ISR_VEC_P0_OFF||)

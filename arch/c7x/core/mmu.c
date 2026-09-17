@@ -31,10 +31,7 @@ LOG_MODULE_DECLARE(os, CONFIG_KERNEL_LOG_LEVEL);
 #pragma DATA_SECTION(c7x_mmu_tables, ".data:c7x_mmu_tables")
 #pragma DATA_ALIGN(c7x_mmu_tables, 4096)
 uint32_t c7x_mmu_tables[C7X_MMU_POOL_WORDS];
-
 uint32_t c7x_mmu_next_slot;
-
-/* Volatile: each access must reach memory and must not be folded. */
 uint32_t *c7x_mmu_l0_root = c7x_mmu_tables;
 
 uint32_t *c7x_mmu_get_tables_base(void)
@@ -87,7 +84,6 @@ uint64_t c7x_mmu_read_entry(const uint32_t *table, uint32_t idx)
 	return (hi << 32) | lo;
 }
 
-/* Read post-mortem from the linker's diagnostic band: this runs before any console. */
 static volatile uint32_t c7x_mmu_fail[2] __used __aligned(64) Z_GENERIC_SECTION(.bss:c7x_diag);
 
 __noinline
@@ -233,17 +229,6 @@ void c7x_mmu_map(uint32_t *l0, uint64_t va, uint64_t pa, uint64_t size, uint32_t
 	}
 }
 
-/*
- *  Assembly helpers in mmu.S:
- *    c7x_mmu_mair_set(index, value)  -- set one MAR byte
- *    c7x_mmu_tcr_set(tcr)            -- set TCR0
- *    c7x_mmu_tbr0_set(table_ptr)     -- set TBR0 (L0 table base)
- *    c7x_mmu_tlb_inv()               -- L1DWBINV + TLB_INV
- *    c7x_l1d_wbinv()             -- L1DWBINV alone (TLB_INV faults at CXM=3)
- *    c7x_mmu_enable()                -- OR enable bits into SCR
- */
-
-/* Assembly only: it clobbers the caller-saved A2/A3. */
 __noinline void c7x_mmu_enable(void)
 {
 	__asm__ volatile (" MVK64 .L1 0x80000000000000C1, A2\n"
