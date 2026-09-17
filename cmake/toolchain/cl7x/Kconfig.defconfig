@@ -1,16 +1,16 @@
-#  Copyright (c) 2026 Texas Instruments Incorporated
-#  SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 Texas Instruments Incorporated
+# SPDX-License-Identifier: Apache-2.0
 
 # cl7x warns "unknown attribute" and drops it, so the handler never runs.
 config TOOLCHAIN_SUPPORTS_VARIABLE_CLEANUP_ATTRIBUTE
 	default n
 
-# cl7x has no --c17
+# cl7x has no --c17.
 choice STD_C
 	default STD_C11
 endchoice
 
-# the init-priority check reads an ET_EXEC ELF, which the cl7x link does not produce
+# The init-priority check reads an ET_EXEC ELF, which the cl7x link does not produce.
 config CHECK_INIT_PRIORITIES
 	default n
 
@@ -18,7 +18,7 @@ config CHECK_INIT_PRIORITIES
 config BUILD_OUTPUT_STRIP_PATHS
 	default n
 
-# lib/libc/Kconfig picks PICOLIBC when the module is present, without consulting
-# TOOLCHAIN_HAS_PICOLIBC. cl7x cannot build it.
+# lib/libc/Kconfig selects PICOLIBC when the module is present, ignoring
+# TOOLCHAIN_HAS_PICOLIBC; cl7x cannot build it.
 config PICOLIBC_SUPPORTED
 	default n

@@ -1,5 +1,5 @@
-#  Copyright (c) 2026 Texas Instruments Incorporated
-#  SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 Texas Instruments Incorporated
+# SPDX-License-Identifier: Apache-2.0
 
 if(NOT CMAKE_DTS_PREPROCESSOR)
   find_program(CMAKE_DTS_PREPROCESSOR aarch64-zephyr-elf-gcc PATHS ${ZEPHYR_SDK_INSTALL_DIR}/gnu/aarch64-zephyr-elf/bin NO_DEFAULT_PATH)
@@ -14,8 +14,8 @@ if(CMAKE_C_COMPILER STREQUAL CMAKE_C_COMPILER-NOTFOUND)
   message(FATAL_ERROR "Zephyr was unable to find cl7x under ${TOOLCHAIN_HOME}/bin")
 endif()
 
-# --version is NOT usable here: cl7x reports it as an invalid option, prints no
-# banner and still exits 0, so the peer form would fail open.
+# cl7x treats --version as an invalid option, prints no banner and still exits
+# 0, so the version has to be read with --compiler_revision instead.
 execute_process(COMMAND ${CMAKE_C_COMPILER} --compiler_revision
   RESULT_VARIABLE cl7x_probe_result
   OUTPUT_VARIABLE CL7X_COMPILER_VERSION

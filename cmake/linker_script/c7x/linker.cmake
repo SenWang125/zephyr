@@ -1,5 +1,5 @@
-#  Copyright (c) 2026 Texas Instruments Incorporated
-#  SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 Texas Instruments Incorporated
+# SPDX-License-Identifier: Apache-2.0
 #
 #  Rendered into a TI .cmd by cmake/linker/cl7x/cmd_script.cmake.
 #

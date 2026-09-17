@@ -1,5 +1,5 @@
-#  Copyright (c) 2026 Texas Instruments Incorporated
-#  SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 Texas Instruments Incorporated
+# SPDX-License-Identifier: Apache-2.0
 
 if(NOT DEFINED TOOLCHAIN_HOME)
   if(DEFINED ENV{CL7X_TOOLCHAIN_PATH})
@@ -46,7 +46,8 @@ else()
 endif()
 set(CL7X_ISA_FLAG "-mv${CL7X_SILICON_VERSION}")
 
-# Global, not TOOLCHAIN_C_FLAGS: c7x-sof builds plain add_library targets outside zephyr_interface.
+# Global: TOOLCHAIN_C_FLAGS reaches zephyr_interface only, and the module
+# libraries are plain add_library targets outside it.
 set(_CL7X_COMMON_FLAGS
   "${CL7X_ISA_FLAG}"
   "--abi=eabi"

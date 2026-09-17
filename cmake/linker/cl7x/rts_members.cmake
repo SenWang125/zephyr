@@ -1,5 +1,5 @@
-#  Copyright (c) 2026 Texas Instruments Incorporated
-#  SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 Texas Instruments Incorporated
+# SPDX-License-Identifier: Apache-2.0
 
 set(CL7X_RTS_LIB "${CL7X_TOOLCHAIN_PATH}/lib/rts${CL7X_SILICON_VERSION}_le.lib")
 

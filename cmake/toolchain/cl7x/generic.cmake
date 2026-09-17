@@ -1,12 +1,13 @@
-#  Copyright (c) 2025 Texas Instruments Incorporated
+# Copyright (c) 2025 Texas Instruments Incorporated
 #
-#  SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: Apache-2.0
 
 cmake_minimum_required(VERSION 3.20)
 
 zephyr_get(CL7X_TOOLCHAIN_PATH)
 
-# TI's MCU+ SDK variable, as arcmwdt accepts METAWARE_ROOT.
+# Also accept CGT_TI_C7000_PATH, the variable TI's tools export, as arcmwdt
+# accepts METAWARE_ROOT.
 set(CGT_TI_C7000_PATH $ENV{CGT_TI_C7000_PATH})
 if(NOT DEFINED CL7X_TOOLCHAIN_PATH AND DEFINED CGT_TI_C7000_PATH)
   message(STATUS "CL7X_TOOLCHAIN_PATH is not set, using CGT_TI_C7000_PATH: '${CGT_TI_C7000_PATH}'")
@@ -38,7 +39,7 @@ set(BINTOOLS  cl7x)
 set(TOOLCHAIN_HOME "${CL7X_TOOLCHAIN_PATH}")
 set(CROSS_COMPILE  "${CL7X_TOOLCHAIN_PATH}/bin/")
 
-set(TOOLCHAIN_HAS_NEWLIB   OFF CACHE BOOL "cl7x does not support NewLib")
+set(TOOLCHAIN_HAS_NEWLIB   OFF CACHE BOOL "cl7x does not support newlib")
 set(TOOLCHAIN_HAS_PICOLIBC OFF CACHE BOOL "cl7x does not support picolibc")
 
 set(CMAKE_C_BYTE_ORDER   LITTLE_ENDIAN)

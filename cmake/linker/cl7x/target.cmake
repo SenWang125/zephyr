@@ -1,5 +1,5 @@
-#  Copyright (c) 2026 Texas Instruments Incorporated
-#  SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 Texas Instruments Incorporated
+# SPDX-License-Identifier: Apache-2.0
 
 set(CMAKE_LINKER "${TOOLCHAIN_HOME}/bin/cl7x")
 set(CMAKE_C_LINK_EXECUTABLE

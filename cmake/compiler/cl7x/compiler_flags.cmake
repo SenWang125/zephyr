@@ -1,5 +1,5 @@
-#  Copyright (c) 2026 Texas Instruments Incorporated
-#  SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 Texas Instruments Incorporated
+# SPDX-License-Identifier: Apache-2.0
 
 include(${ZEPHYR_BASE}/cmake/compiler/compiler_flags_template.cmake)
 
@@ -19,12 +19,12 @@ set_compiler_property(PROPERTY optimization_size    "--opt_level=2" "--opt_for_s
 
 set_compiler_property(PROPERTY debug "--symdebug:dwarf")
 
-# CONFIG_SIZE_OPTIMIZATIONS_AGGRESSIVE otherwise leaves the -O flag empty and
-# cl7x falls back to --opt_level=0, i.e. optimisation off.
+# Without this, CONFIG_SIZE_OPTIMIZATIONS_AGGRESSIVE sets no -O flag at all and
+# cl7x falls back to --opt_level=0.
 set_compiler_property(PROPERTY optimization_size_aggressive "--opt_level=2" "--opt_for_speed=0")
 set_compiler_property(PROPERTY optimization_fast "--opt_level=3" "--opt_for_speed=5")
 
-# gen_kobject_list.py cannot resolve per-function subsections; -mo is global here.
+# gen_kobject_list.py cannot resolve per-function subsections.
 set_compiler_property(PROPERTY no_function_sections "--gen_func_subsections=off")
 set_compiler_property(PROPERTY no_data_sections "--gen_data_subsections=off")
 
@@ -74,7 +74,6 @@ list(APPEND C_EXCLUDED_OPTIONS   ${_cl7x_gcc_only_options})
 list(APPEND CXX_EXCLUDED_OPTIONS ${_cl7x_gcc_only_options})
 list(APPEND ASM_EXCLUDED_OPTIONS ${_cl7x_gcc_only_options})
 
-# TI diagnostics are on by default; each suppression is a diagnostic left unfixed, not harmless.
 set(CL7X_SUPPRESSED_WARNINGS)
 
 list(APPEND CL7X_SUPPRESSED_WARNINGS
@@ -87,10 +86,9 @@ list(APPEND CL7X_SUPPRESSED_WARNINGS
      --diag_suppress=129  # loop is not reachable
      --diag_suppress=187  # dynamic initialization in unreachable code
      --diag_suppress=552  # variable was set but never used
-     # 548: goto past a later initializer; legal C goto-cleanup idiom, TI cannot
-     # separate benign uses.
+     # 548: goto past a later initializer; legal C, TI cannot tell the benign uses apart.
      --diag_suppress=548
-     # 190: integer expression assigned to an enum object; legal C, a C++ error, GCC does not warn
+     # 190: integer assigned to an enum object; legal C, GCC does not warn.
      --diag_suppress=190
 )
 
@@ -100,8 +98,7 @@ list(APPEND CL7X_SUPPRESSED_WARNINGS
 # 161 incompatible declaration, 145/169/515 pointer type mismatch, 188
 # pointless unsigned comparison, 1291 field shadowed.
 
-# cl7x has no stack-protector option, so the security_canaries properties stay
-# empty and the build would report protection it does not emit.
+# cl7x has no stack-protector option, so the build must not claim one.
 if(CONFIG_REQUIRES_STACK_CANARIES)
   message(FATAL_ERROR "CONFIG_STACK_CANARIES is not supported: cl7x cannot emit stack canary instrumentation.")
 endif()

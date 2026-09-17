@@ -1,5 +1,5 @@
-#  Copyright (c) 2026 Texas Instruments Incorporated
-#  SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026 Texas Instruments Incorporated
+# SPDX-License-Identifier: Apache-2.0
 
 # CGT has no objcopy and its tools reject GNU syntax
 foreach(_triple aarch64-zephyr-elf riscv64-zephyr-elf)
