@@ -28,16 +28,34 @@ LOG_MODULE_DECLARE(os, CONFIG_KERNEL_LOG_LEVEL);
 #define PAGE_BASE (C7X_MMU_DESC_PAGE | C7X_MMU_NS | C7X_MMU_AP_PRW | C7X_MMU_SH_OUTER | \
 		   C7X_MMU_AF | C7X_MMU_UXN)
 
-#pragma DATA_SECTION(mmu_tables, ".data:mmu_tables")
-#pragma DATA_ALIGN(mmu_tables, 4096)
-uint32_t mmu_tables[C7X_MMU_POOL_WORDS];
+#pragma DATA_SECTION(c7x_mmu_tables, ".data:c7x_mmu_tables")
+#pragma DATA_ALIGN(c7x_mmu_tables, 4096)
+uint32_t c7x_mmu_tables[C7X_MMU_POOL_WORDS];
 
-uint32_t mmu_next_slot;
+uint32_t c7x_mmu_next_slot;
+
+/* Volatile: each access must reach memory and must not be folded. */
+uint32_t *c7x_mmu_l0_root = c7x_mmu_tables;
+
+uint32_t *c7x_mmu_get_tables_base(void)
+{
+	return *(uint32_t *volatile *)&c7x_mmu_l0_root;
+}
+
+uint32_t c7x_mmu_get_next_slot(void)
+{
+	return *(volatile uint32_t *)&c7x_mmu_next_slot;
+}
+
+void c7x_mmu_set_next_slot(uint32_t slot)
+{
+	*(volatile uint32_t *)&c7x_mmu_next_slot = slot;
+}
 
 __noinline
-uint32_t *mmu_alloc_table(void)
+uint32_t *c7x_mmu_alloc_table(void)
 {
-	uint32_t slot = mmu_get_next_slot();
+	uint32_t slot = c7x_mmu_get_next_slot();
 	uint32_t *base;
 	uint32_t i;
 
@@ -45,8 +63,8 @@ uint32_t *mmu_alloc_table(void)
 		return 0;
 	}
 
-	base = mmu_get_tables_base();
-	mmu_set_next_slot(slot + 1U);
+	base = c7x_mmu_get_tables_base();
+	c7x_mmu_set_next_slot(slot + 1U);
 
 	base += (uint32_t)(slot * C7X_MMU_ENTRIES * 2U);
 	for (i = 0U; i < C7X_MMU_ENTRIES * 2U; i++) {
@@ -55,13 +73,13 @@ uint32_t *mmu_alloc_table(void)
 	return base;
 }
 
-void mmu_write_entry(uint32_t *table, uint32_t idx, uint64_t desc)
+void c7x_mmu_write_entry(uint32_t *table, uint32_t idx, uint64_t desc)
 {
 	table[idx * 2U]     = (uint32_t)(desc & 0xFFFFFFFFU);
 	table[idx * 2U + 1] = (uint32_t)(desc >> 32);
 }
 
-uint64_t mmu_read_entry(const uint32_t *table, uint32_t idx)
+uint64_t c7x_mmu_read_entry(const uint32_t *table, uint32_t idx)
 {
 	uint64_t hi = table[idx * 2U + 1];
 	uint64_t lo = table[idx * 2U];
@@ -90,29 +108,29 @@ static __noinline void mmu_map_one(uint32_t *l0, uint64_t va, uint64_t pa,
 	uint32_t *l1, *l2;
 	uint64_t e;
 
-	e = mmu_read_entry(l0, i0);
+	e = c7x_mmu_read_entry(l0, i0);
 	if ((e & C7X_MMU_DESC_TYPE_MASK) == C7X_MMU_DESC_TABLE) {
 		l1 = (uint32_t *)(uintptr_t)(e & ~C7X_MMU_PAGE_MASK);
 	} else {
-		l1 = mmu_alloc_table();
+		l1 = c7x_mmu_alloc_table();
 		if (!l1) {
 			mmu_fail(5U, va);
 		}
-		mmu_write_entry(l0, i0, (uint64_t)(uintptr_t)l1 | C7X_MMU_DESC_TABLE);
+		c7x_mmu_write_entry(l0, i0, (uint64_t)(uintptr_t)l1 | C7X_MMU_DESC_TABLE);
 	}
 
-	e = mmu_read_entry(l1, i1);
+	e = c7x_mmu_read_entry(l1, i1);
 	if ((e & C7X_MMU_DESC_TYPE_MASK) == C7X_MMU_DESC_TABLE) {
 		l2 = (uint32_t *)(uintptr_t)(e & ~C7X_MMU_PAGE_MASK);
 	} else {
-		l2 = mmu_alloc_table();
+		l2 = c7x_mmu_alloc_table();
 		if (!l2) {
 			mmu_fail(6U, va);
 		}
-		mmu_write_entry(l1, i1, (uint64_t)(uintptr_t)l2 | C7X_MMU_DESC_TABLE);
+		c7x_mmu_write_entry(l1, i1, (uint64_t)(uintptr_t)l2 | C7X_MMU_DESC_TABLE);
 	}
 
-	mmu_write_entry(l2, i2, (pa & ~C7X_MMU_BLOCK_MASK) | attr);
+	c7x_mmu_write_entry(l2, i2, (pa & ~C7X_MMU_BLOCK_MASK) | attr);
 }
 
 __noinline
@@ -123,26 +141,26 @@ static uint32_t *mmu_walk_l2(uint32_t *l0, uint64_t va)
 	uint32_t *l1, *l2;
 	uint64_t e;
 
-	e = mmu_read_entry(l0, i0);
+	e = c7x_mmu_read_entry(l0, i0);
 	if ((e & C7X_MMU_DESC_TYPE_MASK) == C7X_MMU_DESC_TABLE) {
 		l1 = (uint32_t *)(uintptr_t)(e & ~C7X_MMU_PAGE_MASK);
 	} else {
-		l1 = mmu_alloc_table();
+		l1 = c7x_mmu_alloc_table();
 		if (!l1) {
 			return 0;
 		}
-		mmu_write_entry(l0, i0, (uint64_t)(uintptr_t)l1 | C7X_MMU_DESC_TABLE);
+		c7x_mmu_write_entry(l0, i0, (uint64_t)(uintptr_t)l1 | C7X_MMU_DESC_TABLE);
 	}
 
-	e = mmu_read_entry(l1, i1);
+	e = c7x_mmu_read_entry(l1, i1);
 	if ((e & C7X_MMU_DESC_TYPE_MASK) == C7X_MMU_DESC_TABLE) {
 		l2 = (uint32_t *)(uintptr_t)(e & ~C7X_MMU_PAGE_MASK);
 	} else {
-		l2 = mmu_alloc_table();
+		l2 = c7x_mmu_alloc_table();
 		if (!l2) {
 			return 0;
 		}
-		mmu_write_entry(l1, i1, (uint64_t)(uintptr_t)l2 | C7X_MMU_DESC_TABLE);
+		c7x_mmu_write_entry(l1, i1, (uint64_t)(uintptr_t)l2 | C7X_MMU_DESC_TABLE);
 	}
 	return l2;
 }
@@ -161,7 +179,7 @@ static void mmu_map_page(uint32_t *l0, uint64_t va, uint64_t pa, uint64_t attr)
 		mmu_fail(2U, va);
 	}
 
-	e = mmu_read_entry(l2, i2);
+	e = c7x_mmu_read_entry(l2, i2);
 	if ((e & C7X_MMU_DESC_TYPE_MASK) == C7X_MMU_DESC_TABLE) {
 		l3 = (uint32_t *)(uintptr_t)(e & ~C7X_MMU_PAGE_MASK);
 	} else {
@@ -169,26 +187,26 @@ static void mmu_map_page(uint32_t *l0, uint64_t va, uint64_t pa, uint64_t attr)
 		uint64_t old_pa   = e & ~C7X_MMU_PAGE_MASK;
 		uint64_t old_hi   = e & C7X_MMU_UPPER_ATTRS;
 
-		l3 = mmu_alloc_table();
+		l3 = c7x_mmu_alloc_table();
 		if (!l3) {
 			mmu_fail(3U, va);
 		}
 		if ((e & C7X_MMU_DESC_TYPE_MASK) != 0ULL) {
 			old_pa &= ~C7X_MMU_BLOCK_MASK;
 			for (k = 0U; k < C7X_MMU_ENTRIES; k++) {
-				mmu_write_entry(l3, k,
+				c7x_mmu_write_entry(l3, k,
 					(old_pa + ((uint64_t)k << C7X_MMU_PAGE_SHIFT)) |
 					PAGE_OF_BLK(old_attr) | old_hi);
 			}
 		}
-		mmu_write_entry(l2, i2, (uint64_t)(uintptr_t)l3 | C7X_MMU_DESC_TABLE);
+		c7x_mmu_write_entry(l2, i2, (uint64_t)(uintptr_t)l3 | C7X_MMU_DESC_TABLE);
 	}
 
-	mmu_write_entry(l3, i3, (pa & ~C7X_MMU_PAGE_MASK) | PAGE_OF_BLK(attr));
+	c7x_mmu_write_entry(l3, i3, (pa & ~C7X_MMU_PAGE_MASK) | PAGE_OF_BLK(attr));
 }
 
 __noinline
-void mmu_map(uint32_t *l0, uint64_t va, uint64_t pa, uint64_t size, uint32_t attr_idx)
+void c7x_mmu_map(uint32_t *l0, uint64_t va, uint64_t pa, uint64_t size, uint32_t attr_idx)
 {
 	/* attr_idx comes from 3-bit config fields and c7x_mm_init programs all
 	 * eight MAIR bytes; the index selects one, it cannot be out of range.
@@ -253,11 +271,11 @@ void c7x_mm_init(void)
 
 	c7x_mmu_tcr_set(C7X_TCR_ADDR_BITS(48U) | C7X_TCR_WALK_EN);
 
-	mmu_set_next_slot(0U);
-	l0 = mmu_alloc_table();
+	c7x_mmu_set_next_slot(0U);
+	l0 = c7x_mmu_alloc_table();
 	for (i = 0U; i < mmu_config.num_regions; i++) {
 		r = &mmu_config.mmu_regions[i];
-		mmu_map(l0, (uint64_t)r->base_va, (uint64_t)r->base_pa, (uint64_t)r->size, r->attrs);
+		c7x_mmu_map(l0, (uint64_t)r->base_va, (uint64_t)r->base_pa, (uint64_t)r->size, r->attrs);
 	}
 
 	c7x_l1d_wbinv(C7X_L1D_WBINV_ALL);
@@ -317,7 +335,7 @@ static int c7x_mmu_attr_idx(uint32_t flags, uint32_t *attr_idx)
 
 static uint32_t *c7x_mmu_next_table(uint32_t *table, uint32_t idx)
 {
-	uint64_t e = mmu_read_entry(table, idx);
+	uint64_t e = c7x_mmu_read_entry(table, idx);
 	uint32_t *child;
 
 	if ((e & C7X_MMU_DESC_TYPE_MASK) == C7X_MMU_DESC_TABLE) {
@@ -326,11 +344,11 @@ static uint32_t *c7x_mmu_next_table(uint32_t *table, uint32_t idx)
 	if ((e & C7X_MMU_DESC_TYPE_MASK) == C7X_MMU_DESC_BLOCK) {
 		return (uint32_t *)0;
 	}
-	child = mmu_alloc_table();
+	child = c7x_mmu_alloc_table();
 	if (child == (uint32_t *)0) {
 		return (uint32_t *)0;
 	}
-	mmu_write_entry(table, idx, (uint64_t)(uintptr_t)child | C7X_MMU_DESC_TABLE);
+	c7x_mmu_write_entry(table, idx, (uint64_t)(uintptr_t)child | C7X_MMU_DESC_TABLE);
 	return child;
 }
 
@@ -352,14 +370,14 @@ static int c7x_mmu_map_page(uint32_t *l0, uint64_t va, uint64_t pa, uint32_t att
 	}
 	l3 = c7x_mmu_next_table(l2, i2);
 	if (l3 == (uint32_t *)0) {
-		return ((mmu_read_entry(l2, i2) & C7X_MMU_DESC_TYPE_MASK) == C7X_MMU_DESC_BLOCK)
+		return ((c7x_mmu_read_entry(l2, i2) & C7X_MMU_DESC_TYPE_MASK) == C7X_MMU_DESC_BLOCK)
 			       ? -EINVAL
 			       : -ENOMEM;
 	}
-	if ((mmu_read_entry(l3, i3) & C7X_MMU_DESC_TYPE_MASK) != C7X_MMU_DESC_INVALID) {
+	if ((c7x_mmu_read_entry(l3, i3) & C7X_MMU_DESC_TYPE_MASK) != C7X_MMU_DESC_INVALID) {
 		return -EBUSY;
 	}
-	mmu_write_entry(l3, i3, (pa & ~C7X_MMU_PAGE_MASK) | PAGE_BASE | C7X_MMU_ATTR_IDX(attr_idx));
+	c7x_mmu_write_entry(l3, i3, (pa & ~C7X_MMU_PAGE_MASK) | PAGE_BASE | C7X_MMU_ATTR_IDX(attr_idx));
 	return 0;
 }
 
@@ -372,22 +390,22 @@ static void c7x_mmu_unmap_page(uint32_t *l0, uint64_t va)
 	uint64_t e;
 	uint32_t *l1, *l2, *l3;
 
-	e = mmu_read_entry(l0, i0);
+	e = c7x_mmu_read_entry(l0, i0);
 	if ((e & C7X_MMU_DESC_TYPE_MASK) != C7X_MMU_DESC_TABLE) {
 		return;
 	}
 	l1 = (uint32_t *)(uintptr_t)(e & ~C7X_MMU_PAGE_MASK);
-	e = mmu_read_entry(l1, i1);
+	e = c7x_mmu_read_entry(l1, i1);
 	if ((e & C7X_MMU_DESC_TYPE_MASK) != C7X_MMU_DESC_TABLE) {
 		return;
 	}
 	l2 = (uint32_t *)(uintptr_t)(e & ~C7X_MMU_PAGE_MASK);
-	e = mmu_read_entry(l2, i2);
+	e = c7x_mmu_read_entry(l2, i2);
 	if ((e & C7X_MMU_DESC_TYPE_MASK) != C7X_MMU_DESC_TABLE) {
 		return;
 	}
 	l3 = (uint32_t *)(uintptr_t)(e & ~C7X_MMU_PAGE_MASK);
-	mmu_write_entry(l3, i3, C7X_MMU_DESC_INVALID);
+	c7x_mmu_write_entry(l3, i3, C7X_MMU_DESC_INVALID);
 }
 
 static int c7x_mem_map(void *virt, uintptr_t phys, size_t size, uint32_t flags)
@@ -411,7 +429,7 @@ static int c7x_mem_map(void *virt, uintptr_t phys, size_t size, uint32_t flags)
 	}
 
 	key = irq_lock();
-	l0 = mmu_get_tables_base();
+	l0 = c7x_mmu_get_tables_base();
 	for (off = 0U; off < size; off += C7X_MMU_PAGE_SIZE) {
 		rc = c7x_mmu_map_page(l0, (uint64_t)(va + off),
 				      (uint64_t)(phys + off), attr_idx);
@@ -419,7 +437,7 @@ static int c7x_mem_map(void *virt, uintptr_t phys, size_t size, uint32_t flags)
 			break;
 		}
 	}
-	(void)arch_dcache_flush_range((void *)mmu_get_tables_base(), C7X_MMU_POOL_BYTES);
+	(void)arch_dcache_flush_range((void *)c7x_mmu_get_tables_base(), C7X_MMU_POOL_BYTES);
 	if (rc == 0) {
 		c7x_mmu_tlb_inv(C7X_TLB_INV_ALL);
 	}
@@ -442,11 +460,11 @@ static int c7x_mem_unmap(void *addr, size_t size)
 	}
 
 	key = irq_lock();
-	l0 = mmu_get_tables_base();
+	l0 = c7x_mmu_get_tables_base();
 	for (off = 0U; off < size; off += C7X_MMU_PAGE_SIZE) {
 		c7x_mmu_unmap_page(l0, (uint64_t)(va + off));
 	}
-	(void)arch_dcache_flush_range((void *)mmu_get_tables_base(), C7X_MMU_POOL_BYTES);
+	(void)arch_dcache_flush_range((void *)c7x_mmu_get_tables_base(), C7X_MMU_POOL_BYTES);
 	c7x_mmu_tlb_inv(C7X_TLB_INV_ALL);
 	irq_unlock(key);
 	return 0;
@@ -470,7 +488,7 @@ void arch_mem_unmap(void *addr, size_t size)
 int arch_page_phys_get(void *virt, uintptr_t *phys)
 {
 	uint64_t va = (uint64_t)(uintptr_t)virt;
-	uint32_t *table = mmu_get_tables_base();
+	uint32_t *table = c7x_mmu_get_tables_base();
 	uint64_t e = 0U;
 	unsigned int level;
 
@@ -478,7 +496,7 @@ int arch_page_phys_get(void *virt, uintptr_t *phys)
 		uint32_t idx = (uint32_t)((va >> C7X_MMU_LEVEL_SHIFT(level)) & C7X_MMU_INDEX_MASK);
 		uint64_t out_mask = ((uint64_t)1 << C7X_MMU_LEVEL_SHIFT(level)) - 1U;
 
-		e = mmu_read_entry(table, idx);
+		e = c7x_mmu_read_entry(table, idx);
 		if ((e & C7X_MMU_DESC_TYPE_MASK) == C7X_MMU_DESC_INVALID ||
 		    (level == 3U && (e & C7X_MMU_DESC_TYPE_MASK) != C7X_MMU_DESC_PAGE)) {
 			return -EFAULT;

@@ -135,7 +135,7 @@ extern const struct c7x_mmu_config mmu_config;
 
 extern uint32_t *c7x_mmu_l0_root;
 
-uint32_t *mmu_get_tables_base(void);
+uint32_t *c7x_mmu_get_tables_base(void);
 
 void c7x_mmu_mair_set(unsigned int index, unsigned int value);
 void c7x_mmu_tcr_set(uint64_t tcr);

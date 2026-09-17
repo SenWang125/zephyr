@@ -19,7 +19,7 @@ zephyr_linker_include_var(VAR C7X_CMD_DIAG_SUPPRESS VALUE "10068 10063")
 #  cl7x drops these without a reference; KEEP inputs are retained by the generator.
 zephyr_linker_include_var(VAR C7X_CMD_RETAIN VALUE
   "*(.__static_thread_data.static*) \
-*(.data:mmu_tables) \
+*(.data:c7x_mmu_tables) \
 *(.bss:c7x_ecsp_area) \
 *(.bss:c7x_tcsp_area)")
 
@@ -138,7 +138,7 @@ zephyr_linker_section_configure(SECTION .data INPUT ".data;.data.*")
 
 include(${COMMON_ZEPHYR_LINKER_DIR}/common-ram.cmake)
 
-zephyr_linker_section(NAME .data:mmu_tables GROUP RAM_REGION ALIGN 0x1000)
+zephyr_linker_section(NAME .data:c7x_mmu_tables GROUP RAM_REGION ALIGN 0x1000)
 zephyr_linker_section(NAME .sdata GROUP RAM_REGION)
 
 #  The ISR stack lives in L2SRAM, aligned to its 4 KiB page.

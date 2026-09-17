@@ -11,7 +11,6 @@ zephyr_library_sources(
     irq_manage.c
     cpu_idle.c
     mmu.c
-    mmu_tables_access.c
     reset.c
     switch.S
     exception.S
