@@ -2,7 +2,7 @@
  * Copyright (c) 2026 Texas Instruments Incorporated
  * SPDX-License-Identifier: Apache-2.0
  *
- * Page table pool in the image's own .data (DDR), 4 KB aligned, like the MCU+ SDK Mmu_tableArray.
+ *
  */
 
 #include <zephyr/kernel.h>
@@ -30,6 +30,7 @@ BUILD_ASSERT(C7X_MMU_LEVEL_SHIFT(C7X_MMU_LAST_LEVEL) == C7X_MMU_PAGE_SHIFT,
 #define PAGE_BASE (C7X_MMU_DESC_PAGE | C7X_MMU_NS | C7X_MMU_AP_PRW | C7X_MMU_SH_OUTER | \
 		   C7X_MMU_AF | C7X_MMU_UXN)
 
+/* Page table pool in the image's own .data (DDR), 4 KB aligned. */
 #pragma DATA_SECTION(c7x_mmu_tables, ".data:c7x_mmu_tables")
 #pragma DATA_ALIGN(c7x_mmu_tables, 4096)
 static uint32_t c7x_mmu_tables[C7X_MMU_POOL_WORDS];

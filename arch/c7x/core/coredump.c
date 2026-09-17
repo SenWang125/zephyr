@@ -25,7 +25,6 @@ struct c7x_arch_block {
 	} r;
 } __packed;
 
-/* The block is too large to place on the fault handler's stack. */
 static struct c7x_arch_block arch_blk;
 
 void arch_coredump_info_dump(const struct arch_esf *esf)

@@ -74,6 +74,7 @@ __noinline int arch_dcache_invd_all(void)
 
 int arch_dcache_flush_and_invd_all(void)
 {
+	/* writeback then invalidate (set L1DWBINV, ECR259) */
 	c7x_l1d_wbinv(C7X_L1D_WBINV_ALL);
 	return 0;
 }

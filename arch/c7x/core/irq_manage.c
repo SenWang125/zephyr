@@ -91,8 +91,8 @@ void c7x_isr_exit_resched(void)
 }
 
 #ifdef CONFIG_DYNAMIC_INTERRUPTS
-/* Installs the ISR and sets the priority, as ARCH_IRQ_CONNECT does. The owning
- * driver still has to acquire the event with c7x_clec_irq_enable().
+/* Installs the ISR and sets the priority, as ARCH_IRQ_CONNECT does. 
+ * Note the driver still has to acquire/route the event via c7x_clec_irq_enable().
  */
 int arch_irq_connect_dynamic(unsigned int irq, unsigned int priority,
 			     void (*routine)(const void *parameter),

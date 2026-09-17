@@ -61,8 +61,6 @@ FUNC_NORETURN void z_prep_c(void)
 	CODE_UNREACHABLE;
 }
 
-/* ---- the stage reset.c enters, before z_prep_c ---- */
-
 FUNC_NORETURN void c7x_boot_init(void)
 {
 	write_ecsp_s((uint64_t)(uintptr_t)c7x_ecsp_area);
