@@ -8,7 +8,8 @@
 ;    c7x_mmu_tbr0_set(table_ptr)     -- set TBR0 (L0 table base)
 ;    c7x_mmu_tlb_inv()               -- L1DWBINV + TLB_INV
 ;    c7x_l1d_wbinv()                 -- L1DWBINV alone (TLB_INV faults at CXM=3)
-;    c7x_mmu_enable()                -- OR enable bits into SCR
+;    c7x_l1dcfg_get()                -- read the L1D cache configuration register
+;    c7x_l1dcfg_set(cfg)             -- write the L1D cache configuration register
 ;
 
         .global c7x_mmu_mair_set
