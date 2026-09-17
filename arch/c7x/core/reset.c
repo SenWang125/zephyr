@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <zephyr/toolchain.h>
 #include <zephyr/arch/c7x/cpu.h>
+#include <zephyr/platform/hooks.h>
 #include <kernel_internal.h>
 
 register volatile uint64_t __SP;
@@ -17,6 +18,8 @@ FUNC_NORETURN void _c_int00_secure(void)
 	__SP = (((uint64_t)(uintptr_t)z_interrupt_stacks + sizeof(z_interrupt_stacks[0])) -
 		C7X_EABI_FREE_AREA) &
 	       ~(uint64_t)(C7X_EABI_SP_ALIGN - 1U);
+
+	soc_reset_hook();
 
 	c7x_boot_init();
 }

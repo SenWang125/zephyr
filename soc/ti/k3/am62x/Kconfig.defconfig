@@ -32,6 +32,9 @@ config BUILD_OUTPUT_BIN
 
 if SOC_SERIES_AM62X_C7X
 
+config KERNEL_ENTRY
+	default "_c_int00_secure"
+
 config SYS_CLOCK_TICKS_PER_SEC
 	default 1000
 

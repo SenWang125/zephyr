@@ -6,8 +6,10 @@
 #include <zephyr/kernel.h>
 #include <zephyr/toolchain.h>
 #include <zephyr/arch/common/init.h>
+#include <zephyr/arch/common/xip.h>
 #include <zephyr/arch/c7x/cache.h>
 #include <zephyr/arch/c7x/mmu.h>
+#include <zephyr/platform/hooks.h>
 #include <kernel_internal.h>
 
 /* ---- boot stack and control-stack storage ---- */
@@ -45,7 +47,10 @@ void arch_early_memset(void *dst, int c, size_t n)
 
 FUNC_NORETURN void z_prep_c(void)
 {
+	soc_prep_hook();
+
 	arch_bss_zero();
+	arch_data_copy();
 
 	c7x_l1d_wbinv(C7X_L1D_WBINV_ALL);
 

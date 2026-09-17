@@ -8,7 +8,7 @@
 #  reference (ipc_rpmsg_echo_linux/am62dx-evm/c75ss0-0_freertos/ti-c7000/
 #  linker.cmd) partitions the same window with the same anchors.
 
-zephyr_linker(ENTRY _c_int00_secure)
+zephyr_linker(ENTRY ${CONFIG_KERNEL_ENTRY})
 
 set(COMMON_ZEPHYR_LINKER_DIR ${ZEPHYR_BASE}/cmake/linker_script/common)
 
