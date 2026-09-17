@@ -27,8 +27,8 @@ static inline void c7x_epri_set(uint8_t local_irq, uint8_t priority)
 static inline void c7x_efclr(uint8_t local_irq)
 {
 	/* EFCLR is not indexed. The event goes in the VALUE as a bit, unlike
-		 * __EPRI above.
-		 */
+	 * __EPRI above.
+	 */
 	write_efclr(UINT64_C(1) << (local_irq & 0x3FU));
 }
 
@@ -93,8 +93,8 @@ static bool clec_route_kept(uint32_t soc_event)
 static int clec_init(const struct device *dev)
 {
 	/* The CLEC takes events 1..510. Store the whole access-control word, so
-		 * IS_LVL is cleared rather than kept at POR.
-		 */
+	 * IS_LVL is cleared rather than kept at POR.
+	 */
 	const struct clec_cfg *cfg = &clec_config_0;
 
 	ARG_UNUSED(dev);

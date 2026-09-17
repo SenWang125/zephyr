@@ -44,8 +44,8 @@ static inline uint32_t mcasp_numevt(uint32_t ceiling, uint32_t active_sers,
 	uint32_t step = active_sers;
 
 	/* Ceiling 0 = AFIFO bypassed: no burst, no divisibility requirement, and none
-		 * of the NUMEVT words of latency it would hold.
-		 */
+	 * of the NUMEVT words of latency it would hold.
+	 */
 	if (ceiling == 0U) {
 		return 0U;
 	}

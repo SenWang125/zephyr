@@ -97,8 +97,8 @@ static void ti_dmtimer_c7x_isr(const void *arg)
 	timer_writel(TIMER_IRQ_STATUS, TIMER_OVF_INT_BIT);
 
 	/* The posted write has been seen not to stick, and the event is
-		 * level-routed, so an uncleared status re-asserts.
-		 */
+	 * level-routed, so an uncleared status re-asserts.
+	 */
 	if ((timer_readl(TIMER_IRQ_STATUS) & TIMER_OVF_INT_BIT) != 0U) {
 		timer_writel(TIMER_IRQ_STATUS, TIMER_OVF_INT_BIT);
 	}
@@ -134,7 +134,7 @@ static int sys_clock_driver_init(void)
 	{
 		const uintptr_t syscon = DT_REG_ADDR(DT_INST_PHANDLE(0, clksel));
 #if DT_NODE_HAS_PROP(DT_INST_PHANDLE(0, clksel), ti_unlock_offsets)
-/* A locked control-module partition drops the write silently. */
+		/* A locked control-module partition drops the write silently. */
 		static const uint32_t kick0[] = DT_PROP(DT_INST_PHANDLE(0, clksel), ti_unlock_offsets);
 
 		for (size_t i = 0; i < ARRAY_SIZE(kick0); i++) {

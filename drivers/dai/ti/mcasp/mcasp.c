@@ -484,7 +484,7 @@ static int mcasp_hw_init(const struct dai_ti_mcasp_cfg *c,
 			(mcasp_fs_pol_falling(&d->tx_link) ? FSXPOL : 0U));
 	mcasp_reg_write(DAVINCI_MCASP_AHCLKXCTL_REG,
 			(tx_ext != 0U) ? 0U : (AHCLKXE | AHCLKXDIV((hclk_div - 1U) & 0xFFFU)));
-/* ACLKXPOL set = normal bit clock, cleared = bitclock-inversion */
+	/* ACLKXPOL set = normal bit clock, cleared = bitclock-inversion */
 	mcasp_reg_write(DAVINCI_MCASP_ACLKXCTL_REG,
 			(d->tx_link.bclk_inv ? 0U : ACLKXPOL) |
 			(c->async_mode ? TX_ASYNC : 0U) |
@@ -548,7 +548,7 @@ static void mcasp_rx_base(const struct dai_ti_mcasp_cfg *c, const struct dai_ti_
 	mcasp_reg_write(DAVINCI_MCASP_PFUNC_REG, 0x00000000U);
 	mcasp_reg_write(DAVINCI_MCASP_PDIR_REG,  BIT(PIN_BIT_ACLKX) | BIT(PIN_BIT_AHCLKX) |
 		    BIT(PIN_BIT_AFSX) | BIT(PIN_BIT_ACLKR) | BIT(PIN_BIT_AFSR));
-/* an external AHCLK pin stays an input */
+	/* an external AHCLK pin stays an input */
 	if (mcasp_ext_hclk(d, DAI_DIR_RX) != 0U) {
 		mcasp_reg_write(DAVINCI_MCASP_PDIR_REG,
 				mcasp_reg_read(DAVINCI_MCASP_PDIR_REG) & ~BIT(PIN_BIT_AHCLKR));
@@ -847,7 +847,7 @@ static int mcasp_tx_start(const struct dai_ti_mcasp_cfg *c,
 	mcasp_reg_write(DAVINCI_MCASP_XEVTCTL_REG, 0x00000000U);
 	mcasp_dsb();
 
-/* a GBLCTL bit that does not latch aborts the start */
+	/* a GBLCTL bit that does not latch aborts the start */
 	if (mcasp_gblctl_set(c, TXSERCLR) != 0) {
 		return -EIO;
 	}
@@ -868,7 +868,7 @@ static int mcasp_tx_start(const struct dai_ti_mcasp_cfg *c,
 		}
 	}
 
-/* wait for XRDATA to clear before releasing the serializers */
+	/* wait for XRDATA to clear before releasing the serializers */
 	cnt = 0U;
 	while ((mcasp_reg_read(DAVINCI_MCASP_TXSTAT_REG) & XSTAT_XRDATA) &&
 	   cnt < MCASP_TX_PRIME_SPINS) {
