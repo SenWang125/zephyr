@@ -1,6 +1,6 @@
 /*
- *  Copyright (c) 2026 Texas Instruments Incorporated
- *  SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) 2026 Texas Instruments Incorporated
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Page table pool in the image's own .data (DDR), 4 KB aligned, like the MCU+ SDK Mmu_tableArray.
  */
@@ -216,7 +216,7 @@ void mmu_map(uint32_t *l0, uint64_t va, uint64_t pa, uint64_t size, uint32_t att
 }
 
 /*
- *  Assembly helpers (mmu.S, exact replicas of MCU+ SDK Mmu_asm.S):
+ *  Assembly helpers in mmu.S:
  *    c7x_mmu_mair_set(index, value)  -- set one MAR byte
  *    c7x_mmu_tcr_set(tcr)            -- set TCR0
  *    c7x_mmu_tbr0_set(table_ptr)     -- set TBR0 (L0 table base)
@@ -225,7 +225,7 @@ void mmu_map(uint32_t *l0, uint64_t va, uint64_t pa, uint64_t size, uint32_t att
  *    c7x_mmu_enable()                -- OR enable bits into SCR
  */
 
-/* A body of assembly only, as MmuP_enableI(): it clobbers caller-save A2/A3. */
+/* Assembly only: it clobbers the caller-saved A2/A3. */
 __noinline void c7x_mmu_enable(void)
 {
 	__asm__ volatile (" MVK64 .L1 0x80000000000000C1, A2\n"
@@ -266,9 +266,7 @@ void c7x_mm_init(void)
 
 	c7x_mmu_enable();
 
-	/*
-	 * Cache startup after the MMU, in SDK order: L1DON, write-through, invalidate.
-	 */
+	/* L1D cache startup, after the MMU is on: write-through, then invalidate. */
 	c7x_l1d_enable_wt();
 
 	c7x_mmu_tlb_inv(C7X_TLB_INV_ALL);

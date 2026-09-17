@@ -6,12 +6,9 @@
 
 /*
  *  Texas Instruments C7000 Compiler (cl7x)
- *  Because cl7x has __TI_GNU_ATTRIBUTE_SUPPORT__ == 1 it accepts most
- *  GCC __attribute__((...)) forms EXCEPT:
- *    - __attribute__((naked))
- *    - __attribute__((optimize("...")))
- *    - __attribute__((fallthrough))
- *    - __attribute__((optnone))
+ *
+ *  __TI_GNU_ATTRIBUTE_SUPPORT__ is 1, so most GCC __attribute__((...)) forms are
+ *  accepted except naked, optimize("..."), fallthrough and optnone.
  */
 
 #ifndef ZEPHYR_INCLUDE_TOOLCHAIN_CL7X_H_

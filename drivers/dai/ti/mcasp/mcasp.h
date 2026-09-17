@@ -1,6 +1,6 @@
 /*
- *  Copyright (c) 2026 Texas Instruments Incorporated
- *  SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) 2026 Texas Instruments Incorporated
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #ifndef ZEPHYR_DRIVERS_DAI_TI_MCASP_H_
@@ -85,8 +85,9 @@
 #define TXSMRST		BIT(11)
 #define TXFSRST		BIT(12)
 #define MODE(val)	(val)
-/* XRSRCTL[3:2], what the pin drives during a slot this serializer is not
- * transmitting; davinci-mcasp.h:206-208.
+/*
+ * XRSRCTL[3:2]: what the pin drives during a slot this serializer is not
+ * transmitting.
  */
 #define DISMOD_3STATE	(0x0)
 #define DISMOD_LOW	(0x2 << 2)
@@ -106,8 +107,8 @@
 #define DATDMA_DIS	BIT(0)
 #define XSTAT_XUNDRN	BIT(0)		/* cslr_mcasp XSTAT_XUNDRN_MASK; bit 8 is XERR */
 #define RSTAT_ROVRN	BIT(0)
-#define XSTAT_XRERR	BIT(8)		/* composite error, both directions (davinci XRERR) */
-#define XSTAT_XRDATA	BIT(5)		/* transmit data ready (davinci-mcasp) */
+#define XSTAT_XRERR	BIT(8)		/* composite error, both directions */
+#define XSTAT_XRDATA	BIT(5)		/* transmit data ready */
 #define MCASP_STAT_CLR	0xFFFFU
 #define MCASP_XSTAT_ARM	0x1FFU
 
@@ -137,7 +138,7 @@ struct dai_ti_mcasp_cfg {
 	bool      has_tx_irq, has_rx_irq;
 };
 
-/* One simple-audio-card dai-link, as the Linux card would hand it to davinci-mcasp */
+/* One simple-audio-card dai-link. */
 struct mcasp_link {
 	uint16_t cpu_ord;
 	uint8_t  fmt;			/* MCASP_FMT_* */
@@ -164,7 +165,7 @@ struct dai_ti_mcasp_wire {
 
 struct dai_ti_mcasp_data {
 	/* set_config() carries no direction but config_get() takes one, so a device
-	 * whose directions differ needs a copy per direction; latched at PRE_START.
+	 * whose directions differ needs a copy per direction. Latched at PRE_START.
 	 */
 	struct dai_config cfg_dir[2];
 	bool cfg_dir_valid[2];
@@ -186,11 +187,8 @@ struct dai_ti_mcasp_data {
 	bool clk_acquired;
 };
 
-/*
- * NUMEVT the TX FIFO was actually programmed with for the current stream.
- * mcasp_numevt() shrinks the DT ceiling until it divides the period, so the DMA
- * has to follow this rather than the ceiling or the peripheral raises an event
- * the DMA never satisfies.
+/* NUMEVT the TX FIFO was programmed with for this stream. mcasp_numevt()
+ * shrinks the DT ceiling until it divides the period, and the DMA must follow it.
  */
 uint32_t dai_ti_mcasp_tx_numevt(void);
 

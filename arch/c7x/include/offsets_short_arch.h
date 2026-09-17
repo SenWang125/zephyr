@@ -1,6 +1,6 @@
 /*
- *  Copyright (c) 2026 Texas Instruments Incorporated
- *  SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) 2026 Texas Instruments Incorporated
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #ifndef ZEPHYR_ARCH_C7X_INCLUDE_OFFSETS_SHORT_ARCH_H_

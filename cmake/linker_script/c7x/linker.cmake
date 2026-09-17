@@ -86,8 +86,7 @@ zephyr_linker_section_configure(SECTION .text:_c_int00_secure INPUT ".text:_c_in
 zephyr_linker_section(NAME .text:c7x_startup GROUP TEXT_REGION NOINPUT)
 zephyr_linker_section_configure(SECTION .text:c7x_startup INPUT ".text:c7x_startup")
 
-#  ALIGN(0x200000) on both the entry and .text is FreeRTOS parity, and it is
-#  what makes this image's layout insensitive to size.
+#  ALIGN(0x200000) on the entry and .text keeps the layout insensitive to size.
 zephyr_linker_section(NAME .text GROUP TEXT_REGION NOINPUT ALIGN 0x200000)
 zephyr_linker_section_configure(SECTION .text
                                 INPUT ".text;.text.*")
@@ -142,8 +141,7 @@ include(${COMMON_ZEPHYR_LINKER_DIR}/common-ram.cmake)
 zephyr_linker_section(NAME .data:mmu_tables GROUP RAM_REGION ALIGN 0x1000)
 zephyr_linker_section(NAME .sdata GROUP RAM_REGION)
 
-#  C7504 FreeRTOS SDK convention for deliberately selected local-memory data,
-#  such as a 16 KiB-aligned large task stack.
+#  The ISR stack lives in L2SRAM, aligned to its 4 KiB page.
 zephyr_linker_section(NAME .c7x_isr_stack_l2 GROUP L2SRAM_REGION NOINPUT
                       TYPE NOLOAD ALIGN 0x1000)
 zephyr_linker_section_configure(SECTION .c7x_isr_stack_l2 INPUT ".c7x_isr_stack_l2")
@@ -152,7 +150,7 @@ zephyr_linker_section(NAME .l2sramData GROUP L2SRAM_REGION TYPE NOLOAD)
 zephyr_linker_section(NAME .bss:c7x_ecsp_area GROUP STACKS_REGION NOINPUT ALIGN 0x10000)
 zephyr_linker_section_configure(SECTION .bss:c7x_ecsp_area INPUT ".bss:c7x_ecsp_area")
 
-#  Immediately after ECSP: FreeRTOS sets __TCSP = _stack + HWI_ECSP_SIZE.
+#  __TCSP starts immediately above the ECSP area.
 zephyr_linker_section(NAME .bss:c7x_tcsp_area GROUP STACKS_REGION NOINPUT ALIGN 0x2000)
 zephyr_linker_section_configure(SECTION .bss:c7x_tcsp_area INPUT ".bss:c7x_tcsp_area")
 

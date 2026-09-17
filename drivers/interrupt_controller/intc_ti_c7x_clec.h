@@ -1,15 +1,15 @@
 /*
- *  Copyright (c) 2026 Texas Instruments Incorporated
- *  SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) 2026 Texas Instruments Incorporated
+ * SPDX-License-Identifier: Apache-2.0
  *
- *  RTMAP values (from csl_clec.h):
- *    DISABLE = (0x01 << 0) = 0x01 -- disable routing
- *    SYS     = (0x01 << 1) = 0x02 -- route to SoC interrupt router
- *    CPU_0   = (0x00 << 2) = 0x00 -- CPU 0 (ARM)
- *    CPU_4   = (0x04 << 2) = 0x10 -- CPU 4 (typically C7x start)
- *    CPU_ALL = (0x0F << 2) = 0x3C -- all CPUs
+ *  RTMAP field values:
+ *    DISABLE = (0x01 << 0) = 0x01: disable routing
+ *    SYS     = (0x01 << 1) = 0x02: route to SoC interrupt router
+ *    CPU_0   = (0x00 << 2) = 0x00: CPU 0 (ARM)
+ *    CPU_4   = (0x04 << 2) = 0x10: CPU 4 (C7x)
+ *    CPU_ALL = (0x0F << 2) = 0x3C. All CPUs
  *
- *  For AM62D C7x_0: Use RTMAP_CPU_ALL (0x3C) per FreeRTOS HwiP_c75.c
+ *  AM62D C7x_0 uses CPU_ALL.
  */
 
 #ifndef ZEPHYR_DRIVERS_INTERRUPT_CONTROLLER_INTC_TI_C7X_CLEC_H_
@@ -45,7 +45,7 @@ static inline uintptr_t clec_mrr_addr(uintptr_t base, uint32_t event_id)
 #define CLEC_MRR_C7X_EVTNUM_MASK    0x3FU
 
 #define CLEC_RTMAP_DISABLE          0x01U
-#define CLEC_RTMAP_CPU_ALL          0x3CU   /* all CPUs (used by FreeRTOS for C7x) */
+#define CLEC_RTMAP_CPU_ALL          0x3CU   /* all CPUs */
 
 struct clec_event_map {
 	uint16_t soc_event_id;

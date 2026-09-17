@@ -1,6 +1,6 @@
 /*
- *  Copyright (c) 2026 Texas Instruments Incorporated
- *  SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) 2026 Texas Instruments Incorporated
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #define DT_DRV_COMPAT ti_am62dx_mcasp
@@ -46,12 +46,10 @@ static inline uint32_t mcasp_rd(uintptr_t base, uint32_t offset)
 #define mcasp_reg_write(off, val)  mcasp_wr(c->base, (off), (val))
 #define mcasp_reg_read(off)        mcasp_rd(c->base, (off))
 
-/* bound for the start-time FIFO prime / XRDATA waits (davinci-mcasp uses the
- * same 100000 spin bound rather than a timer)
- */
+/* Spin bound for the start-time FIFO prime and XRDATA waits. A spin, not a timer. */
 #define MCASP_TX_PRIME_SPINS 100000U
 
-/* TISCI_MSG_VALUE_DEVICE_HW_STATE_ON; TRANS(2) is the one that hangs us */
+/* TISCI_MSG_VALUE_DEVICE_HW_STATE_ON. A read in state TRANS(2) hangs the bus */
 #define MCASP_PM_HW_STATE_ON	   1U
 #define MCASP_PM_SETTLE_SPINS	   256U
 #define MCASP_DIAG_SETTLE_INIT	   30U
@@ -62,7 +60,7 @@ static inline void mcasp_dsb(void)
 	barrier_dsync_fence_full();
 }
 
-/* simple-audio-card links, compile-time from the sound node(s); matched to this
+/* simple-audio-card links, compile-time from the sound node(s). Matched to this
  * instance by the cpu sound-dai ordinal at probe
  */
 #define MCASP_ACLK_CELL(inst, prop, i)						\
@@ -101,7 +99,7 @@ static const struct mcasp_link mcasp_links[] = {
 #endif
 };
 
-/* davinci-mcasp defaults when no link names this DAI: dsp_a, normal clocks, McASP provides both */
+/* Defaults when no link names this DAI: dsp_a, normal clocks, McASP provides both */
 static const struct mcasp_link mcasp_link_default = {
 	.fmt = MCASP_FMT_DSP_A, .cpu_bclk_master = true, .cpu_fs_master = true,
 };
@@ -131,10 +129,8 @@ static void mcasp_links_resolve(const struct dai_ti_mcasp_cfg *c, struct dai_ti_
 	}
 }
 
-/* Slot geometry in Linux order: the dai-link end (snd_soc_of_parse_tdm_slot),
- * then the McASP node (tdm-slots, tdm-slots-rx), then the stream's own blob.
- * d->wire is direction-shared and only copied at trigger, so a blob is the last
- * resort: with both directions starting together it can belong to the other one.
+/* Slot geometry, in precedence order. The dai-link end, the McASP node's
+ * tdm-slots, then the stream's blob. d->wire is shared with the other direction.
  */
 static uint32_t mcasp_slots_for(const struct dai_ti_mcasp_cfg *c,
 				const struct dai_ti_mcasp_data *d, enum dai_dir dir)
@@ -155,8 +151,8 @@ static uint32_t mcasp_slots_for(const struct dai_ti_mcasp_cfg *c,
 	return 2U;
 }
 
-/* simple-card hands the cpu end's clock to set_sysclk with direction IN unless
- * system-clock-direction-out is set; davinci then takes AHCLKX/AHCLKR from the pin.
+/* A cpu-end clock reaches set_sysclk with direction IN unless the link sets
+ * system-clock-direction-out, which leaves the AHCLK pins as inputs.
  */
 static uint32_t mcasp_ext_hclk(const struct dai_ti_mcasp_data *d, enum dai_dir dir)
 {
@@ -179,8 +175,8 @@ static uint32_t mcasp_slot_width_for(const struct dai_ti_mcasp_data *d, enum dai
 	return stream_bits;
 }
 
-/* davinci_mcasp_set_dai_fmt: the format decides frame-sync width, data delay and
- * whether the frame-sync polarity is flipped (I2S); the link flags do the rest
+/* The DAI format decides frame-sync width, data delay and the I2S polarity
+ * flip. The link flags do the rest.
  */
 static inline uint32_t mcasp_fmt_data_delay(uint8_t fmt)
 {
@@ -200,14 +196,12 @@ static inline bool mcasp_fs_pol_falling(const struct mcasp_link *l)
 volatile uint32_t g_mcasp_rx_overruns;
 extern volatile uint32_t g_mcasp_tx_underruns;
 
-/* XUNDRN is write-1-to-clear, so acking it in the ISR hides it from
- * dai_ti_mcasp_tx_recover_underrun(), which is what actually resets the
- * transmitter. Latch it instead: upstream davinci_mcasp_tx_irq_handler acks and
- * then stops the stream, and the restart below is this port's equivalent.
+/* XUNDRN is write-1-to-clear, so acking it in the ISR would hide it from
+ * dai_ti_mcasp_tx_recover_underrun(), which resets the transmitter.
  */
 volatile uint32_t g_mcasp_tx_underrun_pending;
 
-/* davinci_mcasp_tx_irq_handler / rx_irq_handler: count, ack only what was handled */
+/* Count, and ack only what was handled */
 static void mcasp_tx_irq(const void *arg)
 {
 	const struct device *dev = arg;
@@ -245,8 +239,8 @@ static void mcasp_rx_irq(const void *arg)
 
 static int mcasp_gblctl_set(const struct dai_ti_mcasp_cfg *c, uint32_t bit)
 {
-	/* RMW via the per-side alias (davinci mcasp_set_ctl_reg discipline):
-	 * a combined-GBLCTL write-back can re-assert the OTHER side's resets.
+	/* Read-modify-write through the per-side alias. A combined-GBLCTL write-back can
+	 * re-assert the other side's resets.
 	 */
 	uint32_t alias = (bit & 0xFFU) ? DAVINCI_MCASP_GBLCTLR_REG
 				   : DAVINCI_MCASP_GBLCTLX_REG;
@@ -265,9 +259,9 @@ static int mcasp_gblctl_set(const struct dai_ti_mcasp_cfg *c, uint32_t bit)
 
 /*
  *  A register access while the module is mid power-transition hangs the bus with
- *  no exception -- TISCI reports HW_STATE_TRANS there (#49). Only hw_init and
- *  hw_stop gate on this; the other 6 register-touching functions do not, and
- *  that gap is UNPROVEN either way. check_mcasp_gate_claim.py holds the count.
+ *  no exception. TISCI reports HW_STATE_TRANS there. Only hw_init and
+ *  hw_stop gate on this. The other 6 register-touching functions do not, and
+ *  that gap is UNPROVEN. check_mcasp_gate_claim.py holds the count.
  */
 /*
  * TXSTAT is armed at start and then never read again while audio runs, so a
@@ -275,7 +269,7 @@ static int mcasp_gblctl_set(const struct dai_ti_mcasp_cfg *c, uint32_t bit)
  */
 /* Last point reached on the trigger/quiesce path. The DDR mapping is
  * write-back cached, so the store must be flushed or the A53 reads a stale
- * eviction -- volatile only binds the compiler, not the cache.
+ * eviction. Volatile only binds the compiler, not the cache.
  */
 volatile uint32_t g_mcasp_bc;
 void c7x_bc_set(uint32_t n)
@@ -318,8 +312,8 @@ static bool mcasp_module_is_on(const struct dai_ti_mcasp_cfg *c, unsigned int sl
 	if (c == NULL) {
 		return false;
 	}
-	/* a failing query is a reason to retry, not to give up: TISCI answers with
-	 * an error while the module is still settling (#49)
+	/* A failed query is retried, not fatal. TISCI answers with an error while the
+	 * module is still settling.
 	 */
 	while (spins < MCASP_PM_SETTLE_SPINS) {
 		rc = tisci_get_device_state(dmsc, c->clk.dev_id, &clcnt, &resets,
@@ -339,10 +333,8 @@ static bool mcasp_module_is_on(const struct dai_ti_mcasp_cfg *c, unsigned int sl
 	return true;
 }
 
-/* Serializers this stream will use, by the same rule mcasp_hw_init() applies to
- * need_ser and then programs as NUMDMA. config_set() has stored the channel
- * count by the time SOF asks for the burst, so this is the stream's own value
- * rather than a board maximum.
+/* Serializers this stream uses, by the rule mcasp_hw_init() applies to need_ser.
+ * config_set() has stored the channel count by the time the burst is asked for.
  */
 static uint32_t mcasp_sers_for(const struct dai_ti_mcasp_cfg *c,
 			       const struct dai_ti_mcasp_data *d,
@@ -380,10 +372,8 @@ static int mcasp_hw_init(const struct dai_ti_mcasp_cfg *c,
 	(slot_bits != 16U && slot_bits != 24U && slot_bits != 32U)) {
 		return -EINVAL;
 	}
-	/* Upstream davinci_mcasp_ch_constraint() serves 1..slots on a single
-	 * serializer with the tail slots left inactive, and only beyond that
-	 * requires the count to divide evenly across serializers. Match it, so the
-	 * set the host advertises and the set this accepts are the same set.
+	/* A count up to the slot count is served on one serializer with the tail slots
+	 * left inactive. Beyond that it must divide evenly across serializers.
 	 */
 	if (channels == 0U) {
 		return -EINVAL;
@@ -408,8 +398,7 @@ static int mcasp_hw_init(const struct dai_ti_mcasp_cfg *c,
 		return -EINVAL;
 	}
 
-	/* bit clock and dividers from the GRANTED aux rate (FreeRTOS: derive from
-	 * what TISCI granted, never the requested rate)
+	/* Bit clock and dividers come from the granted AUX rate, never the requested one.
 	 */
 	bitclk = rate * slot_bits * slots_per_ser;
 	tx_ext = mcasp_ext_hclk(d, DAI_DIR_TX);
@@ -424,7 +413,7 @@ static int mcasp_hw_init(const struct dai_ti_mcasp_cfg *c,
 	}
 	d->tx_frame_div = total_div * slot_bits * slots_per_ser;
 	if (tx_ext != 0U) {
-		/* AHCLKX is the pin: only the ACLKX divider applies */
+		/* AHCLKX is the pin. Only the ACLKX divider applies */
 		hclk_div = 1U;
 		aclk_div = (total_div > 32U) ? 32U : total_div;
 	} else if (total_div <= 4096U) {
@@ -482,7 +471,7 @@ static int mcasp_hw_init(const struct dai_ti_mcasp_cfg *c,
 	mcasp_reg_write(DAVINCI_MCASP_WFIFOCTL_REG,
 		    NUMEVT(d->tx_numevt) | NUMDMA(need_ser));
 
-	/* mcasp_common_hw_param/mcasp_i2s_hw_param are strictly per-direction: the
+	/* mcasp_common_hw_param/mcasp_i2s_hw_param are strictly per-direction. The
 	 * playback path never programs an RX register. RX belongs to rx_config.
 	 */
 
@@ -495,21 +484,19 @@ static int mcasp_hw_init(const struct dai_ti_mcasp_cfg *c,
 			(mcasp_fs_pol_falling(&d->tx_link) ? FSXPOL : 0U));
 	mcasp_reg_write(DAVINCI_MCASP_AHCLKXCTL_REG,
 			(tx_ext != 0U) ? 0U : (AHCLKXE | AHCLKXDIV((hclk_div - 1U) & 0xFFFU)));
-	/* davinci: ACLKXPOL set = normal bit clock, cleared = bitclock-inversion */
+/* ACLKXPOL set = normal bit clock, cleared = bitclock-inversion */
 	mcasp_reg_write(DAVINCI_MCASP_ACLKXCTL_REG,
 			(d->tx_link.bclk_inv ? 0U : ACLKXPOL) |
 			(c->async_mode ? TX_ASYNC : 0U) |
 			(d->tx_link.cpu_bclk_master ? ACLKXE : 0U) |
 			ACLKXDIV((aclk_div - 1U) & 0x1FU));
-	/* FSXMOD keeps the full frame length; TXTDM enables only the slots that
+	/* FSXMOD keeps the full frame length. TXTDM enables only the slots that
 	 * carry data, so a sub-slot count leaves the tail slots inactive.
 	 */
 	mcasp_reg_write(DAVINCI_MCASP_TXTDM_REG,   tx_slot_mask);
 
-	/* What an idle serializer drives. davinci-mcasp takes this from the
-	 * dismod DT property and defaults to DISMOD_LOW when it is absent
-	 * (davinci-mcasp.c:2364-2373); three-stating floats the DIN of every codec
-	 * on an unused jack, so a board that needs it has to ask.
+	/* What an idle serializer drives, from the dismod DT property. DISMOD_LOW when
+	 * absent. Three-stating floats the DIN of every codec on an unused jack.
 	 */
 	uint32_t dismod = (c->dismod == 0U || c->dismod == 2U || c->dismod == 3U) ?
 		      DISMOD_VAL(c->dismod) : DISMOD_LOW;
@@ -528,8 +515,8 @@ static int mcasp_hw_init(const struct dai_ti_mcasp_cfg *c,
 		mcasp_reg_write(DAVINCI_MCASP_XRSRCTL_REG(i), v);
 	}
 	mcasp_reg_write(DAVINCI_MCASP_PFUNC_REG, 0x00000000U);
-	/* pdir holds only this direction's bits; overwriting would clear the RX pin
-	 * directions, which the reference keeps in one mask across both streams
+	/* pdir holds only this direction's bits. Overwriting would clear the RX pin
+	 * directions, which one mask covers across both streams.
 	 */
 	mcasp_reg_write(DAVINCI_MCASP_PDIR_REG, mcasp_reg_read(DAVINCI_MCASP_PDIR_REG) | pdir);
 	if (!rx_live) {
@@ -561,7 +548,7 @@ static void mcasp_rx_base(const struct dai_ti_mcasp_cfg *c, const struct dai_ti_
 	mcasp_reg_write(DAVINCI_MCASP_PFUNC_REG, 0x00000000U);
 	mcasp_reg_write(DAVINCI_MCASP_PDIR_REG,  BIT(PIN_BIT_ACLKX) | BIT(PIN_BIT_AHCLKX) |
 		    BIT(PIN_BIT_AFSX) | BIT(PIN_BIT_ACLKR) | BIT(PIN_BIT_AFSR));
-	/* an external AHCLK pin stays an input (davinci set_sysclk direction IN) */
+/* an external AHCLK pin stays an input */
 	if (mcasp_ext_hclk(d, DAI_DIR_RX) != 0U) {
 		mcasp_reg_write(DAVINCI_MCASP_PDIR_REG,
 				mcasp_reg_read(DAVINCI_MCASP_PDIR_REG) & ~BIT(PIN_BIT_AHCLKR));
@@ -578,11 +565,9 @@ static void mcasp_rx_base(const struct dai_ti_mcasp_cfg *c, const struct dai_ti_
 }
 
 /*
- *  mcasp_rx_config - program the RX section for a capture stream and release
- *  the RX clocks. PARITY with FreeRTOS mcasp_program_rx_clks(): identical
- *  rounded-divider + AHCLKR<=4096/ACLKR<=32 split from the granted AUX rate.
- *  RX is ASYNC (own clock + frame-sync master, isSynchronous=0), FreeRTOS-same.
- *  Serializer/FS release stays in mcasp_rx_start (after the RX DMA is armed).
+ *  mcasp_rx_config. Program the RX section and release the RX clocks, from the
+ *  granted AUX rate: rounded divider, AHCLKR<=4096, ACLKR<=32. RX runs ASYNC on
+ *  its own clock. Serializer and frame-sync release follows in mcasp_rx_start.
  */
 static int mcasp_rx_config(const struct dai_ti_mcasp_cfg *c,
 			   struct dai_ti_mcasp_data *d, uint32_t rate,
@@ -649,9 +634,8 @@ static int mcasp_rx_config(const struct dai_ti_mcasp_cfg *c,
 	}
 	rssz  = (slot_bits / 2U) - 1U;
 	rrot  = (32U - slot_bits) / 4U;
-	/* RXROT is a rotate, so a narrow slot wraps the buffer's upper bits into
-	 * the word. Mask everything outside the rotated sample (davinci-mcasp
-	 * masks to the sample width for the same reason).
+	/* RXROT rotates, so a narrow slot wraps the buffer's upper bits into the word.
+	 * Mask everything outside the rotated sample.
 	 */
 	rmask = (slot_bits >= 32U) ? 0xFFFFFFFFU
 	    : (((1U << slot_bits) - 1U) << (rrot * 4U));
@@ -663,9 +647,8 @@ static int mcasp_rx_config(const struct dai_ti_mcasp_cfg *c,
 	    n_rx, bitclk, total_div, hclk_div, aclk_div);
 
 	/*
-	 *  RX registers (offsets = TX - 0x40). RFMT mirrors XFMT computation;
-	 *  AFSRCTL=(slots<<7)|FSRM(bit1) = RX frame master (FreeRTOS 0x402 shape);
-	 *  AHCLKRCTL before ACLKRCTL (high clock settles first, SDK order).
+	 *  RX registers (offsets = TX - 0x40). AFSRCTL=(slots<<7)|FSRM makes RX frame
+	 *  master. AHCLKRCTL is written before ACLKRCTL so the high clock settles first.
 	 */
 	mcasp_reg_write(DAVINCI_MCASP_RXMASK_REG, rmask);
 	mcasp_reg_write(DAVINCI_MCASP_RXFMT_REG,
@@ -689,10 +672,9 @@ static int mcasp_rx_config(const struct dai_ti_mcasp_cfg *c,
 				: ((1U << act_slots) - 1U));
 	}
 	/*
-	 * RCLKCHK stays at its reset value: the RX clock check must not be armed on
-	 * this wiring or duplex capture fails.
-	 * RX FIFO: RNUMDMA = active RX serializers, RNUMEVT derived from the DT
-	 * ceiling in whole serializer steps (see the TX site for the reference).
+	 *  RCLKCHK stays at its reset value. Arming the RX clock check breaks duplex
+	 *  capture. RNUMDMA = active RX serializers; RNUMEVT shrinks in serializer steps
+	 *  from the DT ceiling.
 	 */
 	d->rx_numevt = mcasp_numevt(c->rx_num_evt, n_rx, period_bytes);
 	mcasp_reg_write(DAVINCI_MCASP_RFIFOCTL_REG, NUMEVT(d->rx_numevt) | NUMDMA(n_rx));
@@ -723,7 +705,7 @@ static int mcasp_rx_start(const struct dai_ti_mcasp_cfg *c,
 	if (c == NULL) {
 		return -EINVAL;
 	}
-	/* Heal a config-time latch loss (clock transient): clocks must be
+	/* Heal a config-time latch loss (clock transient). Clocks must be
 	 * released BEFORE the state machine, or the wire stays dead.
 	 */
 	if ((mcasp_reg_read(DAVINCI_MCASP_GBLCTL_REG) & (RXCLKRST | RXHCLKRST))
@@ -747,8 +729,8 @@ static int mcasp_rx_start(const struct dai_ti_mcasp_cfg *c,
 	mcasp_dsb();
 	mcasp_reg_write(DAVINCI_MCASP_REVTCTL_REG, 0x00000000U);
 	mcasp_dsb();
-	/* MCASP_startTransferRx accumulates every bitSetGblCtl status and fails
-	 * the start; a bit that does not latch leaves capture misaligned or dead
+	/* Every GBLCTL bit is checked and a failure aborts the start. A bit that does
+	 * not latch leaves capture misaligned or dead.
 	 */
 	if (mcasp_gblctl_set(c, RXSERCLR) != 0 ||
 	    mcasp_gblctl_set(c, RXSERCLR) != 0 ||
@@ -757,7 +739,7 @@ static int mcasp_rx_start(const struct dai_ti_mcasp_cfg *c,
 		return -EIO;
 	}
 	mcasp_dsb();
-	/* RFIFOSTS is the residual word count: a non-empty FIFO at start offsets
+	/* RFIFOSTS is the residual word count. A non-empty FIFO at start offsets
 	 * the first frame and rotates every channel after it
 	 */
 	LOG_DBG("RXSTATE: GBL=%08x PDIR=%08x RTDM=%08x RFMT=%08x SR14=%08x RSTAT=%08x RLVL=%08x\n",
@@ -768,9 +750,8 @@ static int mcasp_rx_start(const struct dai_ti_mcasp_cfg *c,
 	   mcasp_reg_read(DAVINCI_MCASP_XRSRCTL_REG(14)),
 	   mcasp_reg_read(DAVINCI_MCASP_RXSTAT_REG),
 	   mcasp_reg_read(DAVINCI_MCASP_RFIFOSTS_REG));
-	/* A fixed delay, not a wait on a condition, and the mechanism is not
-	 * understood: removing it fails 2 of 4 asrc starts (32k->48k, 2026-09-06)
-	 * while 48k duplex cannot see it at all. Keep it until that is explained.
+	/* A fixed delay, not a wait on a condition, and the mechanism is not understood:
+	 * removing it breaks the 32k->48k starts; 48k duplex does not need it.
 	 */
 	{
 		uint32_t rs0 = mcasp_reg_read(DAVINCI_MCASP_RXSTAT_REG);
@@ -813,10 +794,9 @@ static void mcasp_rx_quiesce(const struct dai_ti_mcasp_cfg *c)
 }
 
 /*
- *  mcasp_tx_quiesce - stop ONLY the TX side via the XGBLCTL per-side alias
- *  (davinci-mcasp discipline). A full-GBLCTL stop under a live RX disturbs the
- *  capture leg (the SDK stopTransferTx hazard the FreeRTOS firmware bounces RX
- *  around); the alias write leaves the RX bits untouched -- duplex-native.
+ *  mcasp_tx_quiesce. Stop only the TX side, through the XGBLCTL per-side alias.
+ *  A full-GBLCTL stop under a live RX disturbs the capture leg. The alias write
+ *  leaves the RX bits untouched.
  */
 static void mcasp_tx_quiesce(const struct dai_ti_mcasp_cfg *c)
 {
@@ -838,9 +818,9 @@ static void mcasp_tx_quiesce(const struct dai_ti_mcasp_cfg *c)
 }
 
 /*
- *  mcasp_tx_start - release the FIFO + serializers + state machine + frame sync.
- *  Called AFTER the BCDMA channel is armed so the DMA can prime the FIFO before
- *  McASP begins transmitting (FreeRTOS MCASP_startTransferTx order).
+ *  mcasp_tx_start: release the FIFO, serializers, state machine and frame sync.
+ *  Called after the BCDMA channel is armed, so the DMA primes the FIFO before the
+ *  wire starts.
  */
 static int mcasp_tx_start(const struct dai_ti_mcasp_cfg *c,
 			  struct dai_ti_mcasp_data *d)
@@ -852,8 +832,8 @@ static int mcasp_tx_start(const struct dai_ti_mcasp_cfg *c,
 
 	mcasp_reg_write(DAVINCI_MCASP_TXSTAT_REG, MCASP_XSTAT_ARM);
 	mcasp_dsb();
-	/* davinci-mcasp clears FIFO_ENABLE before setting it, so the AFIFO starts
-	 * empty rather than inheriting whatever the previous stream left
+	/* Clear FIFO_ENABLE before setting it, so the AFIFO starts empty rather than
+	 * inheriting the previous stream's contents.
 	 */
 	if (d->tx_numevt) {
 		mcasp_reg_write(DAVINCI_MCASP_WFIFOCTL_REG,
@@ -867,15 +847,13 @@ static int mcasp_tx_start(const struct dai_ti_mcasp_cfg *c,
 	mcasp_reg_write(DAVINCI_MCASP_XEVTCTL_REG, 0x00000000U);
 	mcasp_dsb();
 
-	/* MCASP_startTransferTx: a bit that does not latch aborts the start */
+/* a GBLCTL bit that does not latch aborts the start */
 	if (mcasp_gblctl_set(c, TXSERCLR) != 0) {
 		return -EIO;
 	}
 
-	/* Prime before releasing the transmitter. The AFIFO requests data as soon
-	 * as it is enabled and XEVTCTL is open, but releasing the state machine
-	 * against an empty FIFO underruns on the first frame sync -- and XUNDRN
-	 * halts the transmitter for good, because nothing here polls it.
+	/* Prime the FIFO before releasing the transmitter. The AFIFO requests data as
+	 * soon as it is enabled, and releasing against an empty FIFO underruns.
 	 */
 	if (d->tx_numevt) {
 		cnt = 0U;
@@ -890,7 +868,7 @@ static int mcasp_tx_start(const struct dai_ti_mcasp_cfg *c,
 		}
 	}
 
-	/* davinci-mcasp mcasp_start_tx: wait for XRDATA to clear before release */
+/* wait for XRDATA to clear before releasing the serializers */
 	cnt = 0U;
 	while ((mcasp_reg_read(DAVINCI_MCASP_TXSTAT_REG) & XSTAT_XRDATA) &&
 	   cnt < MCASP_TX_PRIME_SPINS) {
@@ -944,10 +922,8 @@ static void mcasp_hw_stop(const struct dai_ti_mcasp_cfg *c)
 /* Single instance, cached for callers in the DMA layer that carry no DAI device */
 static const struct device *g_mcasp_dev;
 
-/* The TX AFIFO event size currently programmed, or 0 when it is bypassed.
- * The PDMA element count must equal it -- they are two halves of one hardware
- * contract, and a mismatch means the peripheral raises an event the DMA never
- * satisfies.
+/* The TX AFIFO event size in force for this stream, or 0 when bypassed. The PDMA
+ * element count must equal it, or the event is never satisfied.
  */
 uint32_t dai_ti_mcasp_tx_numevt(void)
 {
@@ -960,14 +936,13 @@ uint32_t dai_ti_mcasp_tx_numevt(void)
 	return d->tx_numevt;
 }
 
-/* Underruns seen and recovered since boot; read by name from the host. */
+/* Underruns seen and recovered since boot. Read by name from the host. */
 volatile uint32_t g_mcasp_tx_underruns;
 
 /*
- * A latched XUNDRN halts the transmitter until the state machines are reset,
- * and this SoC wires no McASP interrupt to the C7x (davinci-mcasp gets one and
- * calls snd_pcm_stop_xrun). Polled instead, and only when the data path is
- * already starved -- see the caller's gate in bcdma get_status.
+ *  A latched XUNDRN halts the transmitter until the state machines are reset, and
+ *  no McASP interrupt reaches the C7x, so it is polled here. Only while the data
+ *  path is already starved.
  */
 int dai_ti_mcasp_tx_recover_underrun(void)
 {
@@ -1006,10 +981,11 @@ static int mcasp_clk_up(const struct device *dev)
 	uint64_t clk_rate64 = c->clk_rate;
 	int rc;
 
-	/* Every step CHECKED (FreeRTOS mcasp_aux_clk_up parity): a refused SET_CLOCK_PARENT
-	 * or SET_FREQ leaves AUXCLK at its default rate and every derived bit clock wrong
+	/*
+	 *  Every clock step is checked. A refused SET_CLOCK_PARENT or SET_FREQ leaves
+	 *  AUXCLK at its default and every derived bit clock wrong.
 	 */
-	/* FreeRTOS mcasp_aux_clk_up idles the clock before re-parenting it */
+	/* Idle the clock before re-parenting it. */
 	(void)tisci_cmd_idle_clock(dmsc, c->clk.dev_id, c->clk.clk_id);
 	rc = tisci_cmd_clk_set_parent(dmsc, c->clk.dev_id, c->clk.clk_id,
 				      parent);
@@ -1034,9 +1010,7 @@ static int mcasp_clk_up(const struct device *dev)
 			c->clk_rate);
 	}
 	d->aclk_hz[0] = d->aux_hz;
-	/* the further assigned-clocks entries route the AHCLKX/AHCLKR pin muxes
-	 * (Linux: the clock framework does this from the same properties)
-	 */
+	/* the further assigned-clocks entries route the AHCLKX/AHCLKR pin muxes. */
 	for (uint8_t i = 1U; i < c->n_aclk && i < MCASP_ACLK_MAX; i++) {
 		struct tisci_clock_config ck = { .dev_id = c->clk.dev_id, .clk_id = c->aclk_id[i] };
 		uint64_t want = c->aclk_rate[i];
@@ -1212,12 +1186,9 @@ dai_ti_mcasp_get_properties(const struct device *dev, enum dai_dir dir,
 }
 
 /*
- * The playback channel map, derived here from the DAI's own geometry.
- *
- * McASP hands the FIFO one word per active serializer per slot, so the wire is
- * slot-major: buffer position p lands on serializer p%active_ser, slot
- * p/active_ser. Nibble p of the map names the stream channel that belongs
- * there; 0xf mutes a position past the end of the stream.
+ *  Playback channel map from the DAI's own geometry. The wire is slot-major, so
+ *  position p lands on serializer p%active_ser, slot p/active_ser. Nibble p names
+ *  the stream channel for that position, and 0xf mutes it.
  */
 uint32_t dai_ti_mcasp_playback_chan_map(const struct device *dev, uint32_t channels)
 {
@@ -1349,10 +1320,8 @@ static int dai_ti_mcasp_trigger_inner(const struct device *dev, enum dai_dir dir
 		}
 		return -EINVAL;
 	case DAI_TRIGGER_PAUSE:
-		/* SOF suspends the BCDMA channel the instant this returns, and
-		 * disabling it while McASP still drives PSI-L hangs the DMA
-		 * controller. The active flags stay set: RELEASE restarts the
-		 * stream, and clearing them resets GBLCTL under the other leg.
+		/* SOF suspends the BCDMA channel the moment this returns, and disabling it while
+		 * McASP still drives PSI-L hangs the DMA controller. The active flags stay set.
 		 */
 		if (dir == DAI_DIR_TX) {
 			mcasp_tx_quiesce(c);

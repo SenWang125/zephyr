@@ -7,7 +7,7 @@
 #include <zephyr/ipc/ipc_static_vrings.h>
 #include <zephyr/cache.h>
 
-/* libmetal takes page_shift as unsigned int; a bare -1 would be a sign-change conversion.
+/* libmetal takes page_shift as unsigned int. A bare -1 would be a sign-change conversion.
  */
 #define METAL_IO_NO_PAGING	((unsigned int)-1)
 

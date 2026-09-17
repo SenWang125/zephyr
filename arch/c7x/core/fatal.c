@@ -1,6 +1,6 @@
 /*
- *  Copyright (c) 2026 Texas Instruments Incorporated
- *  SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) 2026 Texas Instruments Incorporated
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <zephyr/kernel.h>
@@ -49,7 +49,7 @@ volatile uint32_t c7x_dbg_trace[3] __used __aligned(64) Z_GENERIC_SECTION(.bss:c
 #endif
 
 #ifdef CONFIG_EXCEPTION_DEBUG
-/* IERR bit names, as the SDK's Exception_c75.h spells them */
+/* IERR bit names, bit 0 first. */
 static const char *const c7x_ierr_bits[] = {
 	"PFX", "IFX", "FPX", "EPX", "OPX", "RCX", "RAX", "PRX",
 	"LBX", "MSX", "DFX", "SEX", "EXX", "ADX", "MMX",
@@ -86,7 +86,7 @@ FUNC_NORETURN void c7x_fatal_error(unsigned int reason, const struct arch_esf *e
 
 	z_fatal_error(reason, esf);
 
-	/* an exception has no return path on C7x: no exception-exit context switch */
+	/* an exception has no return path on C7x. No exception-exit context switch */
 	k_fatal_halt(reason);
 
 	CODE_UNREACHABLE;

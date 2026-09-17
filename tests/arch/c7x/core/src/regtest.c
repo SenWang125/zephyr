@@ -83,7 +83,7 @@ static void rt_fill(void)
 	}
 }
 
-/* Same fill/dump with interrupts locked: the baseline absorbs registers that are
+/* Same fill/dump with interrupts locked. The baseline absorbs registers that are
  * narrower than 64 bits (P), which never read back what was written.
  */
 static void rt_baseline(void (*fn)(const void *, void *, volatile uint32_t *))
@@ -165,7 +165,7 @@ ZTEST(c7x_core, test_isr_preserves_d_file_and_a5)
 	unsigned int bad = 0;
 	int n;
 
-	/* pass 2 covers exactly what pass 1 could not: D0-D14 and A5 */
+	/* pass 2 covers exactly what pass 1 could not. D0-D14 and A5 */
 	rt_fill();
 	rt_baseline(c7x_regtest_dfile);
 	n = rt_measure(c7x_regtest_dfile);
@@ -192,8 +192,8 @@ ZTEST(c7x_core, test_switch_preserves_callee_saved)
 {
 	unsigned int bad = 0;
 
-	/* context switch: only the callee-saved set, which is all TaskSupport_swap
-	 * preserves too -- A8-A15 plus the 64-bit B14/B15
+	/* context switch. Only the callee-saved set, which is all TaskSupport_swap
+	 * preserves too. A8-A15 plus the 64-bit B14/B15
 	 */
 	rt_fill();
 	rt_peer_run = 1;

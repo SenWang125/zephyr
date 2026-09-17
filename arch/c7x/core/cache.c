@@ -1,6 +1,6 @@
 /*
- *  Copyright (c) 2026 Texas Instruments Incorporated
- *  SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) 2026 Texas Instruments Incorporated
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <zephyr/kernel.h>
@@ -10,6 +10,10 @@
 #include <zephyr/arch/c7x/cpu.h>
 #include <c7x.h>
 
+/*
+ * BLKCMO threshold. Below it __DCCIC (clean and invalidate) on a fixed block,
+ * at or above it __DCCMIC over the requested size.
+ */
 #define C7X_CACHE_SMALL_RANGE  1280U
 
 static inline void c7x_cache_wait(void)

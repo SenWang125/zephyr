@@ -213,9 +213,9 @@ static void secproxy_poll_entry(void *p1, void *p2, void *p3)
 			}
 		}
 		if (!any) {
-			/* Nothing left to poll: hand the slot back. An enable that
-			 * raced this sees poll_started clear and starts a new thread;
-			 * one that saw it set is caught by the re-check.
+			/* Nothing left to poll. Hand the slot back. An enable that
+			 * raced this sees poll_started clear and starts a new thread.
+			 * One that saw it set is caught by the re-check.
 			 */
 			atomic_clear(&data->poll_started);
 			for (uint32_t channel = 0; channel < MAILBOX_MAX_CHANNELS; channel++) {

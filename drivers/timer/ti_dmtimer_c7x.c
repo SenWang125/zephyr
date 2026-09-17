@@ -1,26 +1,24 @@
 /*
- *  Copyright (c) 2026 Texas Instruments Incorporated
- *  SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) 2026 Texas Instruments Incorporated
+ * SPDX-License-Identifier: Apache-2.0
  *
- *  Register layout (K3/MCU+ SDK offsets -- NOT Linux OMAP offsets):
+ *  Register layout (K3, not the earlier OMAP layout):
  *    0x020  TIMER_IRQ_EOI        -- IRQ end-of-interrupt
- *    0x024  TIMER_IRQ_STATUS_RAW -- raw status (read only)
+ *    0x024  TIMER_IRQ_STATUS_RAW: raw status (read only)
  *    0x028  TIMER_IRQ_STATUS     -- IRQ status (write 1 to clear)
- *    0x02C  TIMER_IRQ_INT_ENABLE -- IRQ enable set
+ *    0x02C  TIMER_IRQ_INT_ENABLE: IRQ enable set
  *    0x030  TIMER_IRQ_INT_DISABLE-- IRQ enable clear
  *    0x038  TIMER_TCLR           -- control (bit0=ST start, bit1=AR autoreload)
  *    0x03C  TIMER_TCRR           -- counter current value
  *    0x040  TIMER_TLDR           -- reload value
  *    0x048  TIMER_TWPS           -- write posted status (wait before each write)
  *
- *  Reference: MCU+ SDK source/kernel/nortos/dpl/common/TimerP.c
- *             MCU+ SDK source/kernel/.meta/dpl/timer_am62dx.syscfg.js
- *             (c75ss0-0: timerHwiIntNum=8+i, eventId=120+256+i, i=2 for TIMER2)
+ *  CLEC routing. Event 120+256+i to C7x local interrupt 8+i (i=2 for TIMER2).
  *
  *  Tick mechanism:
- *    Load TLDR so that the counter overflows every (25 MHz / TICKS_PER_SEC) cycles.
- *    countVal = 0xFFFFFFFF - counts_per_tick - 1  (MCU+ SDK formula)
- *    For 1000 Hz: counts_per_tick = 25000, countVal = 0xFFFF9E56.
+ *    Load TLDR so the counter overflows every (25 MHz / TICKS_PER_SEC) cycles.
+ *    countVal = 0xFFFFFFFF - counts_per_tick - 1
+ *    For 1000 Hz. counts_per_tick = 25000, countVal = 0xFFFF9E56.
  */
 
 #define DT_DRV_COMPAT ti_am654_timer
@@ -57,12 +55,8 @@
 #define TWPS_TLDR_PEND        BIT(2)
 
 /*
- *  The timer input clock is WKUP_OSC0_CLK = 25 MHz by default.
- *  MCU+ SDK formula (TimerP.c):
- *    countVal = 0xFFFFFFFF - timerCycles - 1
- *    where timerCycles = (inputClkHz * periodInNsec) / 1e9
- *    For 1000 Hz: periodInNsec=1000000, timerCycles=25000
- *    countVal = 0xFFFFFFFF - 25000 - 1 = 0xFFFF9E56 (also used as reloadVal)
+ *  The dmtimer counts down from 0xFFFFFFFF, so a period of N input clocks loads
+ *  as 0xFFFFFFFF - N - 1. The input clock is WKUP_OSC0_CLK, 25 MHz.
  */
 
 #define TIMER_CLOCK_HZ   ((uint32_t)CONFIG_TI_DMTIMER_C7X_CLOCK_HZ)
@@ -71,9 +65,7 @@
 	(TIMER_CLOCK_HZ / CONFIG_SYS_CLOCK_TICKS_PER_SEC)
 
 /*
- *  countVal (MCU+ SDK formula):
- *    countVal = 0xFFFFFFFF - counts_per_tick - 1
- *  This is DIFFERENT from the Linux OMAP formula (0xFFFFFFFF - counts + 1).
+ *  Down-counter reload value for one tick.
  */
 #define TIMER_RELOAD \
 	(0xFFFFFFFFU - TIMER_COUNTS_PER_TICK - 1U)
@@ -104,9 +96,9 @@ static void ti_dmtimer_c7x_isr(const void *arg)
 
 	timer_writel(TIMER_IRQ_STATUS, TIMER_OVF_INT_BIT);
 
-	/* MCUSDK-177: the posted write has been seen not to stick, and this event
-	 * is level-routed, so an uncleared status re-asserts. TimerP.c:232-236.
-	 */
+	/* The posted write has been seen not to stick, and the event is
+		 * level-routed, so an uncleared status re-asserts.
+		 */
 	if ((timer_readl(TIMER_IRQ_STATUS) & TIMER_OVF_INT_BIT) != 0U) {
 		timer_writel(TIMER_IRQ_STATUS, TIMER_OVF_INT_BIT);
 	}
@@ -135,17 +127,14 @@ void sys_clock_set_timeout(uint32_t ticks, bool idle)
 	ARG_UNUSED(idle);
 }
 
-/*
- *  Uses MCU+ SDK TimerP_setup() register sequence (TimerP.c) with
- *  TWPS write-posted polling.
- */
+/* Start the timer and poll TWPS to confirm each posted write landed. */
 static int sys_clock_driver_init(void)
 {
 #if DT_INST_NODE_HAS_PROP(0, clksel)
 	{
 		const uintptr_t syscon = DT_REG_ADDR(DT_INST_PHANDLE(0, clksel));
 #if DT_NODE_HAS_PROP(DT_INST_PHANDLE(0, clksel), ti_unlock_offsets)
-		/* SDK SOC_controlModuleUnlockMMR(): a locked partition drops the write silently */
+/* A locked control-module partition drops the write silently. */
 		static const uint32_t kick0[] = DT_PROP(DT_INST_PHANDLE(0, clksel), ti_unlock_offsets);
 
 		for (size_t i = 0; i < ARRAY_SIZE(kick0); i++) {

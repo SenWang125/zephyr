@@ -9,7 +9,7 @@ set(CMAKE_CXX_LINK_EXECUTABLE
   "<CMAKE_CXX_COMPILER> --run_linker <OBJECTS> -o <TARGET> \
 <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <LINK_LIBRARIES>")
 
-# --retain lists symbols reached only by name; entries must stay here to survive the pre-link pass.
+# --retain lists symbols reached only by name. Entries must stay here to survive the pre-link pass.
 set(CMAKE_EXE_LINKER_FLAGS_INIT
   "--ram_model --reread_libs --warn_sections \
 --map_file=zephyr_final.map \
@@ -29,7 +29,7 @@ set(CMAKE_EXE_LINKER_FLAGS_INIT
 
 include(${CMAKE_CURRENT_LIST_DIR}/rts_members.cmake)
 
-# Empty on purpose: its only job upstream is pulling offsets.o into the image for
+# Empty on purpose. Its only job upstream is pulling offsets.o into the image for
 # _OffsetAbsSyms, and adding a translation unit here moves the image layout.
 macro(toolchain_ld_force_undefined_symbols)
 endmacro()
@@ -83,9 +83,9 @@ function(toolchain_ld_link_elf)
   endif()
 
   list(APPEND TOOLCHAIN_LD_LINK_ELF_LIBRARIES_PRE_SCRIPT "--undef_sym=main")
-  # no --whole-archive in cl7x: one reference keeps configs.c and every CONFIG_ symbol
+  # no --whole-archive in cl7x. One reference keeps configs.c and every CONFIG_ symbol
   list(APPEND TOOLCHAIN_LD_LINK_ELF_LIBRARIES_PRE_SCRIPT "--undef_sym=CONFIG_ARCH")
-  #  Stopgap for the missing --whole-archive: nothing references thread_info.c, so name its data.
+  #  Stopgap for the missing --whole-archive. Nothing references thread_info.c, so name its data.
   if(CONFIG_DEBUG_THREAD_INFO)
     list(APPEND TOOLCHAIN_LD_LINK_ELF_LIBRARIES_PRE_SCRIPT "--undef_sym=_kernel_thread_info_offsets")
   endif()
@@ -97,7 +97,7 @@ function(toolchain_ld_link_elf)
     ${TOOLCHAIN_LD_LINK_ELF_TARGET_ELF}
     ${TOOLCHAIN_LD_LINK_ELF_LIBRARIES_PRE_SCRIPT}
     ${TOOLCHAIN_LD_LINK_ELF_LINKER_SCRIPT}
-    # no --whole-archive in cl7x: app objects that only fill iterable sections are never extracted
+    # no --whole-archive in cl7x. App objects that only fill iterable sections are never extracted
     $<TARGET_OBJECTS:app>
     ${WHOLE_ARCHIVE_LIBS}
     ${NO_WHOLE_ARCHIVE_LIBS}

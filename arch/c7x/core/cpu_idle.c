@@ -1,6 +1,6 @@
 /*
- *  Copyright (c) 2026 Texas Instruments Incorporated
- *  SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) 2026 Texas Instruments Incorporated
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <zephyr/irq.h>
@@ -8,7 +8,7 @@
 #include <zephyr/arch/c7x/arch.h>
 #include <zephyr/tracing/tracing.h>
 
-/* No wait instruction: IDLE does not reliably wake, so the idle loop spins. */
+/* No wait instruction. IDLE does not reliably wake, so the idle loop spins. */
 static ALWAYS_INLINE void c7x_idle(unsigned int key)
 {
 #if defined(CONFIG_TRACING)

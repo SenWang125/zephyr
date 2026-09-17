@@ -82,7 +82,7 @@ function(section_to_string)
       string(APPEND c7x_contents "${IND}${IND}${sym_start} = .;\n")
     endif()
     foreach(pattern ${input})
-      #  TI has no KEEP(); an input nothing references survives only by --retain.
+      #  TI has no KEEP(). An input nothing references survives only by --retain.
       if(keep)
         set_property(GLOBAL APPEND PROPERTY C7X_CMD_KEEP "*(${pattern})")
       endif()
@@ -130,7 +130,7 @@ function(section_to_string)
   set(${STRING_STRING} "${${STRING_STRING}}${c7x_stmt}" PARENT_SCOPE)
 endfunction()
 
-#  A TI GROUP keeps its members contiguous and in order; it is the only
+#  A TI GROUP keeps its members contiguous and in order. It is the only
 #  construct here that nests, so only groups named in C7X_CMD_GROUPS get one.
 function(group_to_string)
   cmake_parse_arguments(STRING "" "OBJECT;STRING" "" ${ARGN})
@@ -261,7 +261,7 @@ function(system_to_string)
       to_string(OBJECT ${region} STRING c7x_sections_out)
     endif()
   endforeach()
-  #  Sections first: rendering them collects the KEEP inputs the options retain.
+  #  Sections first. Rendering them collects the KEEP inputs the options retain.
   c7x_options_to_string("${entry}" options)
   string(APPEND out "${options}\n${c7x_regions_out}${c7x_sections_out}}\n")
 

@@ -129,7 +129,7 @@ void z_sched_cpu_usage(uint8_t cpu_id, struct k_thread_runtime_stats *stats)
 	key = k_spin_lock(&usage_lock);
 	cpu = &_kernel.cpus[cpu_id];
 
-	/* usage0 == 0 is the stop() sentinel; differencing against it charges the raw
+	/* usage0 == 0 is the stop() sentinel. Differencing against it charges the raw
 	 * counter to this thread.
 	 */
 	if (cpu == _current_cpu && cpu->usage0 != 0) {

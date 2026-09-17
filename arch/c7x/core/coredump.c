@@ -1,6 +1,6 @@
 /*
- *  Copyright (c) 2026 Texas Instruments Incorporated
- *  SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) 2026 Texas Instruments Incorporated
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <string.h>
@@ -73,7 +73,7 @@ uintptr_t arch_coredump_stack_ptr_get(const struct k_thread *thread)
 		return 0;
 	}
 
-	/* Only the faulting thread's SP is in the dumped frame; every other
+	/* Only the faulting thread's SP is in the dumped frame. Every other
 	 * thread's is in its switch handle.
 	 */
 	if (thread == _current) {

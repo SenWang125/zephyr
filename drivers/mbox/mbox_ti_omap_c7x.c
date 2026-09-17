@@ -1,23 +1,15 @@
 /*
- *  Copyright (c) 2026 Texas Instruments Incorporated
- *  SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) 2026 Texas Instruments Incorporated
+ * SPDX-License-Identifier: Apache-2.0
  *
- *  This is the transport the FreeRTOS MCU+ SDK uses (ipc_notify_v0_mailbox):
- *  cluster 1 @0x29010000, fifo0 = C7x->A53, fifo1 = A53->C7x. Register layout is
- *  the standard OMAP mailbox (MESSAGE +0x40, FIFO_STATUS +0x80, MSG_STATUS +0xC0,
- *  INT ENABLE/CLEAR/DISABLE +0x108/104/10C per-user, EOI +0x140). Upstream Zephyr
- *  has an interrupt-driven equivalent (drivers/mbox/mbox_ti_omap.c, ti,omap-mailbox,
- *  used by sk_am62 M4); on the C7x the mailbox IRQ reaches the core via CLEC.
- *  V2 upgrade to CLEC-interrupt (proposal
- *  serror-v2-v3-v4): the SDK's gIpcNotifyInterruptConfig_c75ss0_0 (freertos_sdk
- *  am62dx ipc_notify_v0_cfg.c) gives the CONFIRMED routing for A53->C7x —
- *  CLEC input eventId = 193, C7x local intNum = 60 (the "59/60/62" are the three
- *  senders' intNums: 59=mcu-R5F, 60=A53, 62=main-R5F). Route eventId 193 -> local
- *  60 exactly like the DMTimer2 tick (378->10) and enable the OMAP INT for the
- *  C7x's fifo1 user in HW.
+ *  OMAP mailbox on cluster 1 at 0x29010000: fifo0 is C7x->A53, fifo1 is A53->C7x.
+ *  The register layout is the standard OMAP one (MESSAGE +0x40, FIFO_STATUS +0x80,
+ *  MSG_STATUS +0xC0, INT ENABLE/CLEAR/DISABLE +0x108/104/10C per user, EOI +0x140).
+ *  On the C7x the mailbox interrupt arrives through the CLEC. Input event 193 to
+ *  C7x local interrupt 60.
  */
 
-/* the MESSAGE register the send path writes, as upstream mbox_ti_omap.c */
+/* The MESSAGE register the send path writes. */
 #define MAILBOX_MBOX_SIZE	sizeof(uint32_t)
 
 #define DT_DRV_COMPAT ti_omap_mailbox_c7x
@@ -33,7 +25,7 @@
 
 LOG_MODULE_REGISTER(mbox_omap_c7x, CONFIG_MBOX_LOG_LEVEL);
 
-/* OMAP mailbox register offsets (per FreeRTOS ipc_notify_v0_mailbox.h) */
+/* OMAP mailbox register offsets. */
 #define MBOX_MESSAGE(base, f)     ((base) + 0x40u + 0x4u * (f))
 #define MBOX_FIFOSTATUS(base, f)  ((base) + 0x80u + 0x4u * (f))
 #define MBOX_MSGSTATUS(base, f)   ((base) + 0xC0u + 0x4u * (f))
@@ -123,7 +115,7 @@ static int mbox_omap_c7x_send(const struct device *dev, mbox_channel_id_t ch,
 		memcpy(&data32, msg->data, msg->size);
 	}
 	(void)sys_cache_data_flush_and_invd_all();
-	/* test and store as one unit, as IpcNotify_sendMsg does: the ISR's ack path also writes */
+	/* test and store as one unit, as IpcNotify_sendMsg does. The ISR's ack path also writes */
 	key = arch_irq_lock();
 	for (uint32_t i = 0; i < MBOX_TX_SPIN_LIMIT; i++) {
 		if ((sys_read32(MBOX_FIFOSTATUS(cfg->base, FIFO_TX)) & 0x1u) == 0u) {
@@ -175,7 +167,7 @@ static int mbox_omap_c7x_set_enabled(const struct device *dev,
 	if (enable && !data->rx_armed) {
 		const struct mbox_omap_c7x_config *cfg = dev->config;
 
-		/* the enable survives a DSP-only restart; IpcNotify_init masks before it arms */
+		/* the enable survives a DSP-only restart. IpcNotify_init masks before it arms */
 		sys_write32(MBOX_NEWMSG(FIFO_RX), MBOX_IRQENABLE_CLR(cfg->base, MBOX_USER_C7X));
 		irq_connect_dynamic(cfg->irqn, cfg->irq_prio, mbox_omap_c7x_isr, dev, 0U);
 		c7x_clec_irq_enable(cfg->irqn);

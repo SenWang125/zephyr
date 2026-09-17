@@ -31,7 +31,7 @@ set(CL7X_RTS_MEMBERS
   s_sinf.c.obj
   s_cosf.c.obj
   k_sinf.c.obj
-  # double sin/cos: the rfft node builds its twiddles in double
+  # double sin/cos. The rfft node builds its twiddles in double
   s_sin.c.obj
   s_cos.c.obj
   k_sin.c.obj

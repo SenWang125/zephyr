@@ -1,6 +1,6 @@
 /*
- *  Copyright (c) 2026 Texas Instruments Incorporated
- *  SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) 2026 Texas Instruments Incorporated
+ * SPDX-License-Identifier: Apache-2.0
  *
  *    Callee-set frame: A8-A15, B14, B15, RP, TCSP, TSR.
  *    +0      [0]    reserved (16-byte ABI free area, lower word)

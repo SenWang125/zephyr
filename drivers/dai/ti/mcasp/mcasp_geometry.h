@@ -1,6 +1,6 @@
 /*
- *  Copyright (c) 2026 Texas Instruments Incorporated
- *  SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) 2026 Texas Instruments Incorporated
+ * SPDX-License-Identifier: Apache-2.0
  *
  *  Scalar geometry rules, separated from the device model so a host test can
  *  compile the shipped code rather than a copy of it.
@@ -11,10 +11,8 @@
 
 #include <stdint.h>
 
-/* How many serializers this channel count needs, 0 if the geometry cannot
- * carry it. A count the DAI refuses here but ALSA advertised opens, passes
- * hw_params and fails -EIO at trigger, which is what 3, 5 and 7 did on a
- * 4-serializer by 2-slot board.
+/* How many serializers this channel count needs, 0 if the geometry cannot carry
+ * it. A count refused here but advertised by ALSA fails -EIO at trigger.
  */
 static inline uint32_t mcasp_sers_needed(uint32_t n_ser_avail, uint32_t slots_per_ser,
 					 uint32_t channels)
@@ -31,8 +29,8 @@ static inline uint32_t mcasp_sers_needed(uint32_t n_ser_avail, uint32_t slots_pe
 	return (need_ser == 0U || need_ser > n_ser_avail) ? 0U : need_ser;
 }
 
-/* golden davinci-mcasp:1184-1200 -- shrink NUMEVT in whole-serializer steps
- * until it divides the period, then give the DMA that same value.
+/* Shrink NUMEVT in whole-serializer steps until it divides the period, then
+ * give the DMA that same value.
  */
 static inline uint32_t mcasp_numevt(uint32_t ceiling, uint32_t active_sers,
 				    uint32_t period_bytes)
@@ -45,9 +43,9 @@ static inline uint32_t mcasp_numevt(uint32_t ceiling, uint32_t active_sers,
 	}
 	uint32_t step = active_sers;
 
-	/* ceiling 0 = AFIFO bypassed (davinci-mcasp:1157); no burst, no divisibility
-	 * requirement, and none of the NUMEVT words of latency it would hold
-	 */
+	/* Ceiling 0 = AFIFO bypassed: no burst, no divisibility requirement, and none
+		 * of the NUMEVT words of latency it would hold.
+		 */
 	if (ceiling == 0U) {
 		return 0U;
 	}
@@ -61,7 +59,7 @@ static inline uint32_t mcasp_numevt(uint32_t ceiling, uint32_t active_sers,
 	if (n == 0U) {
 		n = step;
 	}
-	/* period unknown at this trigger: keep the ceiling rather than guess */
+	/* period unknown at this trigger. Keep the ceiling rather than guess */
 	if (period_words == 0U) {
 		return n;
 	}

@@ -1,8 +1,6 @@
 /*
- *  Copyright (c) 2026 Texas Instruments Incorporated
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Reference: MCU+ SDK cslr_clec.h, csl_clec.c, HwiP_c75.c
+ * Copyright (c) 2026 Texas Instruments Incorporated
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #define DT_DRV_COMPAT ti_c7x_clec
@@ -19,7 +17,7 @@
 static inline void c7x_epri_set(uint8_t local_irq, uint8_t priority)
 {
 	/* EPRI holds the priority in bits 7:5. Clamp rather than mask, as
-	 * c7x_irq_priority_set() does: masking turns 0 or 8 into EPRI 0, highest.
+	 * c7x_irq_priority_set() does. Masking turns 0 or 8 into EPRI 0, highest.
 	 */
 	unsigned int p = (priority > 7U) ? 7U : (priority < 1U) ? 1U : priority;
 
@@ -28,9 +26,9 @@ static inline void c7x_epri_set(uint8_t local_irq, uint8_t priority)
 
 static inline void c7x_efclr(uint8_t local_irq)
 {
-	/* EFCLR is not indexed (c7x_cr.h: "INDEX RANGE [0,0]") -- the event goes in
-	 * the VALUE as a bit, unlike __EPRI above. Same form as HwiP_c75.c:389.
-	 */
+	/* EFCLR is not indexed. The event goes in the VALUE as a bit, unlike
+		 * __EPRI above.
+		 */
 	write_efclr(UINT64_C(1) << (local_irq & 0x3FU));
 }
 
@@ -94,10 +92,9 @@ static bool clec_route_kept(uint32_t soc_event)
 
 static int clec_init(const struct device *dev)
 {
-	/*
-	 * Same 1..510 range as HwiP_configClecAccessCtrl(), but a full store rather
-	 * than its read-modify-write, so IS_LVL is cleared instead of kept at POR.
-	 */
+	/* The CLEC takes events 1..510. Store the whole access-control word, so
+		 * IS_LVL is cleared rather than kept at POR.
+		 */
 	const struct clec_cfg *cfg = &clec_config_0;
 
 	ARG_UNUSED(dev);
@@ -160,13 +157,10 @@ void c7x_clec_irq_enable(unsigned int local_irq)
 }
 
 /*
- *  The FreeRTOS self-program path (matches SDK HwiP_configClec + Hwi_setPriority,
- *  kernel/nortos/dpl/c75/HwiP_c75.c): the vendor UDMA/MCASP drivers compute the
- *  completion (soc_event -> c7x local) mapping at runtime via Udma_eventRegister,
- *  so those events are not in the devicetree-generated clec_events[]. This routes them the same way
- *  c7x_clec_irq_enable() routes a table entry, but from caller-supplied numbers.
- *  secureClaimEnable=FALSE, rtMap=CPU_ALL, ESE=1 -- identical to the SDK CLEC cfg.
- *  Programs a NEW event only; never touches the pre-claimed mailbox routes.
+ *  Route a runtime-chosen soc_event to a C7x local event. The UDMA and McASP
+ *  drivers compute their completion mapping at runtime, so those events are not
+ *  in the devicetree-generated clec_events[]. Programs a new event only and
+ *  leaves the pre-claimed mailbox routes alone.
  */
 __attribute__((noinline))
 void c7x_clec_route_program(uint32_t soc_event, uint32_t c7x_evt,

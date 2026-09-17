@@ -1,7 +1,7 @@
 /*
- *  Copyright (c) 2026 Texas Instruments Incorporated
+ * Copyright (c) 2026 Texas Instruments Incorporated
  *
- *  SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 /**
@@ -28,7 +28,7 @@
 #define C7X_ESF_A0		0x50
 #define C7X_EXC_FRAME_SIZE	0xd0
 
-/* vector the fault came from, as the SDK's Exception_dispatch vectorType */
+/* Which vector the fault came from. */
 #define C7X_FAULT_VECTOR_EXC	0
 #define C7X_FAULT_VECTOR_PF	1
 

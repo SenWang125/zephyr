@@ -16,7 +16,7 @@ extern "C" {
 
 /**
  *
- * Describes the serial wire: the codec's slot width is fixed by its register binary.
+ * Describes the serial wire. The codec's slot width is fixed by its register binary.
  */
 struct dai_ti_mcasp_blob {
 	uint32_t gw_attr;
@@ -25,7 +25,7 @@ struct dai_ti_mcasp_blob {
 };
 
 /* Detect a latched XUNDRN and restart the transmitter. Called from the DMA
- * get_status path only when it is already starved -- this SoC wires no McASP
+ * get_status path only when it is already starved. This SoC wires no McASP
  * interrupt to the C7x, so there is nothing to hook.
  */
 int dai_ti_mcasp_tx_recover_underrun(void);
@@ -40,12 +40,12 @@ uint32_t dai_ti_mcasp_tx_numevt(void);
 uint32_t dai_ti_mcasp_tx_burst(const struct device *dev, uint32_t channels);
 
 /* RX burst width in FIFO words for a stream of this channel count. Same reason
- * as TX: the DAI cannot answer from its own state before a CAPTURE has
+ * as TX. The DAI cannot answer from its own state before a CAPTURE has
  * configured it, and a playback does not populate the RX side.
  */
 uint32_t dai_ti_mcasp_rx_burst(const struct device *dev, uint32_t channels);
 
-/* Called from the BCDMA driver's completion path: it owns the transfer, the
+/* Called from the BCDMA driver's completion path. It owns the transfer, the
  * McASP owns the FIFO status. Public because a DMA driver must not reach into
  * a DAI driver's private header.
  */

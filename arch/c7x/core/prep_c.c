@@ -1,6 +1,6 @@
 /*
- *  Copyright (c) 2026 Texas Instruments Incorporated
- *  SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) 2026 Texas Instruments Incorporated
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <zephyr/kernel.h>
@@ -26,7 +26,7 @@ char c7x_isr_stack[CONFIG_ISR_STACK_SIZE] Z_GENERIC_SECTION(.c7x_isr_stack_l2)
 	__aligned(C7X_EABI_SP_ALIGN);
 #define C7X_ISR_STACK_TOP	(c7x_isr_stack + sizeof(c7x_isr_stack))
 
-/* Override for regular memset, volatile used to prevent any loop unrolling optimizations */
+/* volatile. The compiler must not recognise this loop and call memset. */
 void arch_early_memset(void *dst, int c, size_t n)
 {
 	volatile uint64_t *w = dst;

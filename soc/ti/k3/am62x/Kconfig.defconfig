@@ -41,8 +41,7 @@ DT_CHOSEN_Z_SRAM = zephyr,sram
 config KERNEL_VM_SIZE
 	default $(add_hex,$(dt_chosen_reg_size_hex,$(DT_CHOSEN_Z_SRAM)),0x1000000)
 
-# Matches CacheP_CACHELINE_ALIGNMENT (128U) in the MCU+ SDK
-# (source/kernel/dpl/CacheP.h:62).
+# The C7x L1D cache line is 128 bytes.
 config DCACHE_LINE_SIZE
 	default 128
 

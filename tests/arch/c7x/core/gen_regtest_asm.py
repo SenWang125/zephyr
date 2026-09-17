@@ -33,7 +33,7 @@ CTLREGS = ["FPCR", "FSR", "GPLY", "GFPGFR"]
 P1_PAT, P1_FLAG, P1_OUT, P1_PRED = "D0", "D1", "D2", "A5"
 P1_A = [i for i in range(16) if i != 5]
 P1_D = list(range(3, 15))             # D15 is SP
-# args arrive in A4/A5/A6, so out must be copied off A5 before A5 is patterned;
+# args arrive in A4/A5/A6, so out must be copied off A5 before A5 is patterned.
 # A7 is not an argument register and A0-A5 is the only legal predicate range.
 P2_PAT, P2_OUT, P2_FLAG, P2_PRED = "A4", "A7", "A6", "A0"
 P2_D = list(range(15))
@@ -206,10 +206,8 @@ e("        NOP     5")
 e("        .endasmfunc")
 
 # ------------------------------------------------------------- context switch
-# Only the callee-saved set is asserted here. A context switch is a function
-# call, so caller-saved registers are not required to survive one, and TI's own
-# TaskSupport_swap saves exactly this set -- including B14/B15 as 64-bit STDs,
-# not the full VB14/VB15.
+# Only the callee-saved set is asserted. A context switch is a function call,
+# and B14/B15 are saved as 64-bit STDs rather than as the full VB14/VB15.
 OFF_SW = 0x800
 e()
 e("        .sect \".text:c7x_regtest_switch\"")

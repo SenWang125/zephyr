@@ -1,6 +1,6 @@
 /*
- *  Copyright (c) 2026 Texas Instruments Incorporated
- *  SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) 2026 Texas Instruments Incorporated
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <zephyr/kernel.h>
@@ -91,11 +91,8 @@ void c7x_isr_exit_resched(void)
 }
 
 #ifdef CONFIG_DYNAMIC_INTERRUPTS
-/*
- * Mirrors ARCH_IRQ_CONNECT (arch/c7x/irq.h) which installs the ISR and sets the priority
- *
- * Note the owning driver must do a seperate CLEC call c7x_clec_irq_enable() to acquire the
- * device control from Resource Manager (RM).
+/* Installs the ISR and sets the priority, as ARCH_IRQ_CONNECT does. The owning
+ * driver still has to acquire the event with c7x_clec_irq_enable().
  */
 int arch_irq_connect_dynamic(unsigned int irq, unsigned int priority,
 			     void (*routine)(const void *parameter),

@@ -590,7 +590,7 @@ extern "C" {
 #if TOOLCHAIN_HAS_C_AUTO_TYPE
 #define Z_CBPRINTF_AUTO_TYPE(v) __auto_type
 #else
-/* ?: reproduces the array/function decay __auto_type would apply. */
+/* ?. Reproduces the array/function decay __auto_type would apply. */
 #define Z_CBPRINTF_AUTO_TYPE(v) __typeof__(0 ? (v) : (v))
 #endif
 #define Z_CONSTIFY(v) ({ \

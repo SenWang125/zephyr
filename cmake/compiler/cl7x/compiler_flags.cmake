@@ -86,13 +86,13 @@ list(APPEND CL7X_SUPPRESSED_WARNINGS
      --diag_suppress=129  # loop is not reachable
      --diag_suppress=187  # dynamic initialization in unreachable code
      --diag_suppress=552  # variable was set but never used
-     # 548: goto past a later initializer; legal C, TI cannot tell the benign uses apart.
+     # 548: goto past a later initializer. Legal C, TI cannot tell the benign uses apart.
      --diag_suppress=548
-     # 190: integer assigned to an enum object; legal C, GCC does not warn.
+     # 190: integer assigned to an enum object. Legal C, GCC does not warn.
      --diag_suppress=190
 )
 
-# Left ON deliberately -- each can indicate a real defect, and none is a
+# Left ON deliberately. Each can indicate a real defect, and none is a
 # consequence of cl7x differing from GCC: 69/70 integer conversion sign change
 # and truncation, 770 pointer to smaller integer, 183 format string mismatch,
 # 161 incompatible declaration, 145/169/515 pointer type mismatch, 188

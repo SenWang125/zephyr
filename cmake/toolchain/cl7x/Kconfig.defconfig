@@ -19,6 +19,6 @@ config BUILD_OUTPUT_STRIP_PATHS
 	default n
 
 # lib/libc/Kconfig selects PICOLIBC when the module is present, ignoring
-# TOOLCHAIN_HAS_PICOLIBC; cl7x cannot build it.
+# TOOLCHAIN_HAS_PICOLIBC. cl7x cannot build it.
 config PICOLIBC_SUPPORTED
 	default n

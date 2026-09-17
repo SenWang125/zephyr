@@ -1,8 +1,8 @@
 /*
- *  Copyright (c) 2026 Texas Instruments Incorporated
- *  SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) 2026 Texas Instruments Incorporated
+ * SPDX-License-Identifier: Apache-2.0
  *
- * The identity regions of the SDK gMmuRegionConfig[]; without them CLEC is dead.
+ * The identity regions of the SDK gMmuRegionConfig[]. Without them CLEC is dead.
  */
 
 #include <zephyr/arch/c7x/mmu.h>

@@ -46,7 +46,7 @@ else()
 endif()
 set(CL7X_ISA_FLAG "-mv${CL7X_SILICON_VERSION}")
 
-# Global: TOOLCHAIN_C_FLAGS reaches zephyr_interface only, and the module
+# Global. TOOLCHAIN_C_FLAGS reaches zephyr_interface only, and the module
 # libraries are plain add_library targets outside it.
 set(_CL7X_COMMON_FLAGS
   "${CL7X_ISA_FLAG}"

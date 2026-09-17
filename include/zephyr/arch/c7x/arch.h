@@ -1,6 +1,6 @@
 /*
- *  Copyright (c) 2026 Texas Instruments Incorporated
- *  SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) 2026 Texas Instruments Incorporated
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 /**
@@ -26,17 +26,14 @@
 extern "C" {
 #endif
 
-/*
- *  Matches portBYTE_ALIGNMENT in the MCU+ SDK FreeRTOS C7x port
- *  (kernel/freertos/portable/TI_CGT/DSP_C75X/portmacro.h:102).
- */
+/* Stack pointer alignment required by the C7x ABI. */
 #define ARCH_STACK_PTR_ALIGN            16U
 
 /* the ISR save frame lands on the interrupted thread's stack */
 #define C7X_ISR_FRAME_RESERVE (C7X_EABI_FREE_AREA + C7X_ISR_FRAME_WORST_CASE)
 
-/* A thread's TCSP record is the first 0x2000 of its stack object, as the SDK
- * carves it from the task stack; TCSP bits 12:0 read as zero, so the object is 0x2000-aligned.
+/* A thread's TCSP record is the first 0x2000 bytes of its stack object. The
+ * low 13 bits of a TCSP read as zero, so the object is 0x2000-aligned.
  */
 #define ARCH_THREAD_STACK_RESERVED        (C7X_CONTEXT_SAVE_SIZE + C7X_ISR_FRAME_RESERVE)
 #define ARCH_THREAD_STACK_OBJ_ALIGN(size) C7X_CONTEXT_SAVE_SIZE
