@@ -13,7 +13,7 @@ add_custom_command(
 	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/gen_regtest_asm.py
 )
 
-target_sources(app PRIVATE src/main.c src/regtest.c ${REGTEST_ASM})
+target_sources(app PRIVATE src/main.c src/regtest.c src/cache_test.c ${REGTEST_ASM})
 
 # The board has no UART. Printk reaches the host through the c7x-sof trace ring,
 # which the resource table exposes as remoteproc's trace0.
