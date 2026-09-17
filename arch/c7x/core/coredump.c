@@ -25,7 +25,7 @@ struct c7x_arch_block {
 	} r;
 } __packed;
 
-/* the block is too big for the fault path's stack */
+/* The block is too large to place on the fault handler's stack. */
 static struct c7x_arch_block arch_blk;
 
 void arch_coredump_info_dump(const struct arch_esf *esf)
@@ -66,15 +66,15 @@ uint16_t arch_coredump_tgt_code_get(void)
 	return COREDUMP_TGT_C7X;
 }
 
-#if defined(CONFIG_ARCH_SUPPORTS_COREDUMP_STACK_PTR)
+#if defined(CONFIG_DEBUG_COREDUMP_THREAD_STACK_TOP)
 uintptr_t arch_coredump_stack_ptr_get(const struct k_thread *thread)
 {
 	if (thread == NULL) {
 		return 0;
 	}
 
-	/* the faulting SP is only in the frame, so the current thread's comes
-	 * from there; another thread's is its saved switch handle
+	/* Only the faulting thread's SP is in the dumped frame; every other
+	 * thread's is in its switch handle.
 	 */
 	if (thread == _current) {
 		return (uintptr_t)arch_blk.r.sp;
@@ -82,4 +82,4 @@ uintptr_t arch_coredump_stack_ptr_get(const struct k_thread *thread)
 
 	return (uintptr_t)thread->switch_handle;
 }
-#endif
+#endif /* CONFIG_DEBUG_COREDUMP_THREAD_STACK_TOP */
