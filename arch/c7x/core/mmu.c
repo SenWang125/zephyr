@@ -14,7 +14,6 @@
 #include <zephyr/cache.h>
 #include <zephyr/arch/c7x/cache.h>
 #include <zephyr/arch/c7x/mmu.h>
-#include <c7x_mmu_tables.h>
 
 LOG_MODULE_DECLARE(os, CONFIG_KERNEL_LOG_LEVEL);
 
@@ -33,26 +32,26 @@ BUILD_ASSERT(C7X_MMU_LEVEL_SHIFT(C7X_MMU_LAST_LEVEL) == C7X_MMU_PAGE_SHIFT,
 
 #pragma DATA_SECTION(c7x_mmu_tables, ".data:c7x_mmu_tables")
 #pragma DATA_ALIGN(c7x_mmu_tables, 4096)
-uint32_t c7x_mmu_tables[C7X_MMU_POOL_WORDS];
-uint32_t c7x_mmu_next_slot;
-uint32_t *c7x_mmu_l0_root = c7x_mmu_tables;
+static uint32_t c7x_mmu_tables[C7X_MMU_POOL_WORDS];
+static uint32_t c7x_mmu_next_slot;
+static uint32_t *c7x_mmu_l0_root = c7x_mmu_tables;
 
 uint32_t *c7x_mmu_get_tables_base(void)
 {
 	return *(uint32_t *volatile *)&c7x_mmu_l0_root;
 }
 
-uint32_t c7x_mmu_get_next_slot(void)
+static uint32_t c7x_mmu_get_next_slot(void)
 {
 	return *(volatile uint32_t *)&c7x_mmu_next_slot;
 }
 
-void c7x_mmu_set_next_slot(uint32_t slot)
+static void c7x_mmu_set_next_slot(uint32_t slot)
 {
 	*(volatile uint32_t *)&c7x_mmu_next_slot = slot;
 }
 
-__noinline
+static __noinline
 uint32_t *c7x_mmu_alloc_table(void)
 {
 	uint32_t slot = c7x_mmu_get_next_slot();
@@ -73,13 +72,13 @@ uint32_t *c7x_mmu_alloc_table(void)
 	return base;
 }
 
-void c7x_mmu_write_entry(uint32_t *table, uint32_t idx, uint64_t desc)
+static void c7x_mmu_write_entry(uint32_t *table, uint32_t idx, uint64_t desc)
 {
 	table[idx * 2U]     = (uint32_t)(desc & 0xFFFFFFFFU);
 	table[idx * 2U + 1] = (uint32_t)(desc >> 32);
 }
 
-uint64_t c7x_mmu_read_entry(const uint32_t *table, uint32_t idx)
+static uint64_t c7x_mmu_read_entry(const uint32_t *table, uint32_t idx)
 {
 	uint64_t hi = table[idx * 2U + 1];
 	uint64_t lo = table[idx * 2U];
@@ -205,7 +204,7 @@ static void mmu_map_page(uint32_t *l0, uint64_t va, uint64_t pa, uint64_t attr)
 }
 
 __noinline
-void c7x_mmu_map(uint32_t *l0, uint64_t va, uint64_t pa, uint64_t size, uint32_t attr_idx)
+static void c7x_mmu_map(uint32_t *l0, uint64_t va, uint64_t pa, uint64_t size, uint32_t attr_idx)
 {
 	/* attr_idx comes from 3-bit config fields and c7x_mm_init programs all
 	 * eight MAIR bytes; the index selects one, it cannot be out of range.
