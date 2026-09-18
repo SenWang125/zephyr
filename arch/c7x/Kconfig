@@ -31,6 +31,17 @@ config C7X_OPTIMIZED_STRING
 	help
 	  Provides more optimal C7x vector implementations of memcpy() and memset()
 	  in place of minimal libc's byte loops.
+
+config C7X_I2528_WORKAROUND
+	bool "Work around silicon erratum i2528"
+	default y
+	help
+	  The MMU can misclassify the load/store category of an instruction
+	  while checking memory permissions, so a valid access to a read-only
+	  page may be flagged or an illegal store to one allowed. The compiler
+	  avoids the affected sequences by default. If no memory page is
+	  configured read-only, the workaround is not needed and can be
+	  disabled.
 endmenu
 
 endif # C7X
