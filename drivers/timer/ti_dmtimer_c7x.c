@@ -145,6 +145,14 @@ static int sys_clock_driver_init(void)
 #endif
 		sys_write32(DT_INST_PHA(0, clksel, value),
 			    syscon + DT_INST_PHA(0, clksel, offset));
+#if DT_NODE_HAS_PROP(DT_INST_PHANDLE(0, clksel), ti_unlock_offsets)
+		/* TI re-locks the partition after the write (SOC_controlModuleLockMMR). */
+		for (size_t i = 0; i < ARRAY_SIZE(kick0); i++) {
+			sys_write32(K3_CTRL_MMR_KICK_LOCK_VAL, syscon + kick0[i]);
+			sys_write32(K3_CTRL_MMR_KICK_LOCK_VAL,
+				    syscon + kick0[i] + 4U);
+		}
+#endif
 	}
 #endif
 
