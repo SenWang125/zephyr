@@ -88,7 +88,7 @@ void c7x_l1d_enable_wt(void)
 	(void)arch_dcache_invd_all();
 }
 
-/* write-through is the only mode L1D supports */
+/* The vendor selects L1D write-through for AM62DX; L1DCFG bit 4 would allow write-back. */
 void arch_dcache_enable(void)
 {
 	c7x_l1d_enable_wt();

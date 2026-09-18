@@ -3,7 +3,8 @@
 
 add_subdirectory(core)
 
-# the ISR stack is not 64-byte aligned
+# --vectypes=off removes the unprefixed vector type names (int4, float8); the
+# double-underscore forms remain available (SPRUIG8).
 zephyr_compile_options(--vectypes=off)
 
 # on by default, off with CONFIG_C7X_I2528_WORKAROUND=n.
