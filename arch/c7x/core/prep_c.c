@@ -28,23 +28,6 @@ char c7x_isr_stack[CONFIG_ISR_STACK_SIZE] Z_GENERIC_SECTION(.c7x_isr_stack_l2)
 	__aligned(C7X_EABI_SP_ALIGN);
 #define C7X_ISR_STACK_TOP	(c7x_isr_stack + sizeof(c7x_isr_stack))
 
-void arch_early_memset(void *dst, int c, size_t n)
-{
-	/* volatile to prevent any loop unrolling optimizations */
-	volatile uint64_t *w = dst;
-	volatile char *b;
-	uint64_t fill = 0x0101010101010101ULL * (uint8_t)c;
-
-	while (n >= 8U) {
-		*w++ = fill;
-		n -= 8U;
-	}
-	b = (volatile char *)w;
-	while (n-- != 0U) {
-		*b++ = (char)c;
-	}
-}
-
 FUNC_NORETURN void z_prep_c(void)
 {
 	soc_prep_hook();
