@@ -52,12 +52,12 @@ extern void         c7x_irq_unlock(unsigned int key);
 
 void c7x_set_cop(uint32_t cop);
 
-static inline unsigned int arch_irq_lock(void)
+static ALWAYS_INLINE unsigned int arch_irq_lock(void)
 {
 	return c7x_irq_lock();
 }
 
-static inline void arch_irq_unlock(unsigned int key)
+static ALWAYS_INLINE void arch_irq_unlock(unsigned int key)
 {
 	c7x_irq_unlock(key);
 }
