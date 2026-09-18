@@ -8,8 +8,8 @@
 #include <zephyr/arch/c7x/arch.h>
 #include <zephyr/tracing/tracing.h>
 
-/* No WFI here; C7x IDLE gates on L1/SE/CMMU idle (SPRUIP0 3.18.4.4) and never
- * returns while a streaming engine is open, so idle only opens events.
+/* No applicable instructions available. C7x IDLE gates on L1/SE/CMMU idle
+ * and won't return whilst any is open, so do nothing after unlock events.
  */
 static ALWAYS_INLINE void c7x_idle(unsigned int key)
 {
