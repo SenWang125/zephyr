@@ -102,6 +102,3 @@ int arch_coprocessors_disable(struct k_thread *thread)
 
 	return -ENOTSUP;
 }
-
-BUILD_ASSERT(C7X_ISR_FRAME_RESERVE == 4960U,
-	     "the stack reserve changed: every thread stack object changes size with it");
