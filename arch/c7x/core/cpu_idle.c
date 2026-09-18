@@ -8,7 +8,9 @@
 #include <zephyr/arch/c7x/arch.h>
 #include <zephyr/tracing/tracing.h>
 
-/* No WAIT instruction available. IDLE instruction is not used as it touches the power state  */
+/* No WFI here; C7x IDLE gates on L1/SE/CMMU idle (SPRUIP0 3.18.4.4) and never
+ * returns while a streaming engine is open, so idle only opens events.
+ */
 static ALWAYS_INLINE void c7x_idle(unsigned int key)
 {
 #if defined(CONFIG_TRACING)
