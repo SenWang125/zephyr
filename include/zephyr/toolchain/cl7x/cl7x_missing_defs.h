@@ -54,7 +54,7 @@ typedef unsigned long  __cl7x_uintptr;
 #define __INTMAX_TYPE__       __cl7x_int64
 #define __UINTMAX_TYPE__      __cl7x_uint64
 
-typedef int            __cl7x_wchar;
+typedef unsigned int   __cl7x_wchar;
 #define __WCHAR_TYPE__        __cl7x_wchar
 
 typedef unsigned long  __cl7x_size;
