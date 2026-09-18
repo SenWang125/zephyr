@@ -3,8 +3,8 @@
 
 add_subdirectory(core)
 
-# --vectypes=off removes the unprefixed vector type names (int4, float8); the
-# double-underscore forms remain available (SPRUIG8).
+# --vectypes=off removes the unprefixed vector type names; the double-underscore
+# forms remain.
 zephyr_compile_options(--vectypes=off)
 
 # on by default, off with CONFIG_C7X_I2528_WORKAROUND=n.

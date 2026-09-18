@@ -23,6 +23,21 @@
 /* TSR.GEE: events are globally enabled */
 #define C7X_TSR_GEE		BIT64(25)
 
+/* TSR.CXM execution modes. */
+#define C7X_CXM_GU	0U	/* Guest user */
+#define C7X_CXM_GS	1U	/* Guest supervisor */
+#define C7X_CXM_U	2U	/* Root user */
+#define C7X_CXM_S	3U	/* Root supervisor */
+#define C7X_CXM_SU	4U	/* Secure user */
+#define C7X_CXM_SS	5U	/* Secure supervisor */
+
+#define C7X_TSR_CXM_MASK	GENMASK(2, 0)
+#define C7X_TSR_COP_MASK	GENMASK(16, 8)
+
+/* Events are serviced only in supervisor modes. */
+#define C7X_CXM_IS_SUPERVISOR(cxm) \
+	((cxm) == C7X_CXM_GS || (cxm) == C7X_CXM_S || (cxm) == C7X_CXM_SS)
+
 /* EPRI priority field: 1 is the lowest priority, 7 the highest */
 #define C7X_EPRI_PRIO_SHIFT	5U
 #define C7X_EPRI_PRIO_MIN	1U

@@ -21,4 +21,9 @@ uint64_t c7x_l1dcfg_get(void);
 void c7x_l1dcfg_set(uint64_t cfg);
 void c7x_l1d_enable_wt(void);
 
+/**
+ * @brief Wait for a block cache maintenance operation to complete.
+ */
+void c7x_cache_wait(void);
+
 #endif /* ZEPHYR_INCLUDE_ARCH_C7X_CACHE_H_ */

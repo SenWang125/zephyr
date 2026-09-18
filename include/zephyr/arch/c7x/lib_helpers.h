@@ -15,6 +15,7 @@
 #include <zephyr/types.h>
 
 #include <c7x.h>
+#include <zephyr/arch/c7x/cpu.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -89,9 +90,49 @@ static ALWAYS_INLINE void write_tcsp(uint64_t val)
 	__TCSP = val;
 }
 
+static ALWAYS_INLINE uint64_t read_estp_s(void)
+{
+	return (uint64_t)__ESTP_S;
+}
+
 static ALWAYS_INLINE void write_estp_s(uint64_t val)
 {
 	__ESTP_S = val;
+}
+
+static ALWAYS_INLINE uint64_t read_estp_gs(void)
+{
+	return (uint64_t)__ESTP_GS;
+}
+
+static ALWAYS_INLINE void write_estp_gs(uint64_t val)
+{
+	__ESTP_GS = val;
+}
+
+static ALWAYS_INLINE unsigned int read_cxm(void)
+{
+	return (unsigned int)(read_tsr() & C7X_TSR_CXM_MASK);
+}
+
+static ALWAYS_INLINE unsigned int read_cop(void)
+{
+	return (unsigned int)((read_tsr() & C7X_TSR_COP_MASK) >> 8);
+}
+
+/* Program the event table of the mode the core is in. */
+static ALWAYS_INLINE void write_estp_current(uint64_t val)
+{
+	switch (read_cxm()) {
+	case C7X_CXM_S:
+		write_estp_s(val);
+		break;
+	case C7X_CXM_GS:
+		write_estp_gs(val);
+		break;
+	default:
+		break;
+	}
 }
 
 static ALWAYS_INLINE uint64_t read_ierr(void)

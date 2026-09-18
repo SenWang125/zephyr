@@ -56,7 +56,7 @@ FUNC_NORETURN void c7x_boot_init(void)
 
 	/* ISR SP for c7x_switch_dispatch's state block */
 	c7x_isr_task_sp[1] = (uint64_t)(uintptr_t)C7X_ISR_STACK_TOP;
-	write_estp_s((uint64_t)(uintptr_t)&_z_vecs_reset);
+	write_estp_current((uint64_t)(uintptr_t)&_z_vecs_reset);
 
 	/* Clear stale EFR and EER in case of warm boot */
 	write_efclr(UINT64_MAX);

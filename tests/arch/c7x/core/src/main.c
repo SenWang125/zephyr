@@ -5,6 +5,10 @@
 
 #include <zephyr/kernel.h>
 #include <zephyr/ztest.h>
+#include <zephyr/arch/c7x/lib_helpers.h>
+#include <zephyr/arch/c7x/cache.h>
+
+extern char _z_vecs_reset[];
 
 ZTEST_SUITE(c7x_core, NULL, NULL, NULL, NULL, NULL);
 
@@ -52,4 +56,42 @@ ZTEST(c7x_core, test_tick_advances)
 	k_sleep(K_MSEC(20));
 	zassert_true(k_uptime_ticks() - t0 >= k_ms_to_ticks_floor64(20),
 		     "uptime did not advance across a 20 ms sleep");
+}
+
+ZTEST(c7x_core, test_cxm_is_supervisor)
+{
+	unsigned int cxm = read_cxm();
+
+	TC_PRINT("CXM=%u COP=0x%x\n", cxm, read_cop());
+	zassert_true(C7X_CXM_IS_SUPERVISOR(cxm), "CXM %u does not service events", cxm);
+}
+
+ZTEST(c7x_core, test_estp_for_current_mode)
+{
+	uint64_t want = (uint64_t)(uintptr_t)_z_vecs_reset;
+
+	/* the bring-up programs the ESTP copy of the mode the core is in */
+	switch (read_cxm()) {
+	case C7X_CXM_S:
+		zassert_equal(read_estp_s(), want, "ESTP_S is not the vector table");
+		break;
+	case C7X_CXM_GS:
+		zassert_equal(read_estp_gs(), want, "ESTP_GS is not the vector table");
+		break;
+	default:
+		zassert_true(false, "not a supervisor mode");
+	}
+}
+
+ZTEST(c7x_core, test_data_cache_range_ops)
+{
+	static volatile uint32_t buf[64] __aligned(128);
+
+	buf[0] = 0x12345678U;
+	buf[1] = 0x9ABCDEF0U;
+	arch_dcache_flush_and_invd_range((void *)buf, sizeof(buf));
+	arch_dcache_invd_range((void *)buf, sizeof(buf));
+	c7x_cache_wait();
+	zassert_equal(buf[0], 0x12345678U, "value lost across range cache ops");
+	zassert_equal(buf[1], 0x9ABCDEF0U, "value lost across range cache ops");
 }

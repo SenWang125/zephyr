@@ -16,7 +16,7 @@
  */
 #define C7X_CACHE_SMALL_RANGE  1280U
 
-static inline void c7x_cache_wait(void)
+void c7x_cache_wait(void)
 {
 	__SE0ADV(char);
 	barrier_dmem_fence_full();
@@ -88,7 +88,7 @@ void c7x_l1d_enable_wt(void)
 	(void)arch_dcache_invd_all();
 }
 
-/* The vendor selects L1D write-through for AM62DX; L1DCFG bit 4 would allow write-back. */
+/* L1D is write-through; L1DCFG bit 4 selects write-back. */
 void arch_dcache_enable(void)
 {
 	c7x_l1d_enable_wt();
