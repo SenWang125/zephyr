@@ -73,6 +73,25 @@ typedef __builtin_va_list __va_list;
 #define __INT16_MAX__    (32767)
 #define __INT32_MAX__    (2147483647)
 #define __INT64_MAX__    (9223372036854775807LL)
+
+/* stdint.h's least/fast widths resolve through these; the compiler omits them. */
+#define __INT_LEAST8_MAX__   __INT8_MAX__
+#define __INT_LEAST16_MAX__  __INT16_MAX__
+#define __INT_LEAST32_MAX__  __INT32_MAX__
+#define __INT_LEAST64_MAX__  __INT64_MAX__
+#define __UINT_LEAST8_MAX__  __UINT8_MAX__
+#define __UINT_LEAST16_MAX__ __UINT16_MAX__
+#define __UINT_LEAST32_MAX__ __UINT32_MAX__
+#define __UINT_LEAST64_MAX__ __UINT64_MAX__
+#define __INT_FAST8_MAX__    __INT32_MAX__
+#define __INT_FAST16_MAX__   __INT32_MAX__
+#define __INT_FAST32_MAX__   __INT32_MAX__
+#define __INT_FAST64_MAX__   __INT64_MAX__
+#define __UINT_FAST64_MAX__  __UINT64_MAX__
+#define __INTMAX_MAX__       __INT64_MAX__
+#define __UINTMAX_MAX__      __UINT64_MAX__
+#define __SIZEOF_INTMAX__    8
+#define __SIZEOF_UINTMAX__   8
 #define __UINT_FAST8_MAX__   __UINT32_MAX__
 #define __UINT_FAST16_MAX__  __UINT32_MAX__
 #define __UINT_FAST32_MAX__  __UINT32_MAX__
