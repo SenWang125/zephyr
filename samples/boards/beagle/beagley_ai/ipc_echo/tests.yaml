@@ -1,0 +1,17 @@
+sample:
+  description: Echo rpmsg messages back to Linux from the C7x DSP, using the
+    resource table the kernel fills in.
+  name: BeagleY-AI C7x IPC echo
+tests:
+  sample.boards.beagle.beagley_ai.ipc_echo:
+    build_only: true
+    platform_allow:
+      - beagley_ai/j722s/c71_0
+      - beagley_ai/j722s/c71_1
+    integration_platforms:
+      - beagley_ai/j722s/c71_0
+      - beagley_ai/j722s/c71_1
+    tags:
+      - mbox
+      - openamp
+      - rpmsg
