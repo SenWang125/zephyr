@@ -1,0 +1,92 @@
+/*
+ * Copyright (c) 2026 Texas Instruments Incorporated
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/dts-v1/;
+
+#include <ti/ti_j722s_c7524_c71_1.dtsi>
+
+/ {
+	model = "BeagleY-AI J722S C7x_1";
+	compatible = "beagle,beagley-ai", "ti,j722s";
+
+	chosen {
+		zephyr,sram = &ddr_fw;
+		zephyr,flash = &ddr_fw;
+		zephyr,ipc = &ipc0;
+		zephyr,ipc_shm = &ddr_ipc;
+	};
+
+	/*
+	 * DDR owned by Linux and the other remote cores: declared, never
+	 * allocated into, so a stray placement fails the link.
+	 */
+	ddr0_reserved: memory@80000000 {
+		compatible = "zephyr,memory-region", "mmio-sram";
+		reg = <0x00 0x80000000 0x00 0x24000000>;
+		zephyr,memory-region = "DDR0_RESERVED";
+		zephyr,memory-region-flags = "";
+	};
+
+	ddr_ipc: memory@a4000000 {
+		compatible = "zephyr,memory-region", "mmio-sram";
+		reg = <0x00 0xa4000000 0x00 0x00100000>;
+		zephyr,memory-region = "IPC_VRING";
+		zephyr,memory-region-flags = "rw";
+	};
+
+	rsc_table: memory@a4100000 {
+		compatible = "zephyr,memory-region", "mmio-sram";
+		reg = <0x00 0xa4100000 0x00 0x00000400>;
+		zephyr,memory-region = "IPC_RSC";
+		zephyr,memory-region-flags = "rw";
+	};
+
+	trace_buf: memory@a4100400 {
+		compatible = "zephyr,memory-region", "mmio-sram";
+		reg = <0x00 0xa4100400 0x00 0x0000fc00>;
+		zephyr,memory-region = "TRACE";
+		zephyr,memory-region-flags = "rw";
+	};
+
+	diag_band: memory@a4110000 {
+		compatible = "zephyr,memory-region", "mmio-sram";
+		reg = <0x00 0xa4110000 0x00 0x00010000>;
+		zephyr,memory-region = "DIAG";
+		zephyr,memory-region-flags = "rw";
+	};
+
+	vectors: memory@a4400000 {
+		compatible = "zephyr,memory-region", "mmio-sram";
+		reg = <0x00 0xa4400000 0x00 0x00010000>;
+		zephyr,memory-region = "VECTORS";
+		zephyr,memory-region-flags = "rx";
+	};
+
+	fw_sram: memory@a4410000 {
+		compatible = "zephyr,memory-region", "mmio-sram";
+		reg = <0x00 0xa4410000 0x00 0x00bf0000>;
+		zephyr,memory-region = "SRAM";
+		zephyr,memory-region-flags = "rwx";
+	};
+
+	/* firmware DDR past the resource table page */
+	ddr_fw: memory@a4101000 {
+		compatible = "mmio-sram";
+		reg = <0x00 0xa4101000 0x00 0x00eff000>;
+	};
+
+	ipc0: ipc0 {
+		compatible = "zephyr,ipc-openamp-static-vrings";
+		memory-region = <&ddr_ipc>;
+		mboxes = <&mailbox_c7x 3>, <&mailbox_c7x 2>;
+		mbox-names = "rx", "tx";
+		role = "remote";
+		status = "okay";
+	};
+};
+
+&secure_proxy_main {
+	status = "okay";
+};
