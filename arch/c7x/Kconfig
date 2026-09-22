@@ -24,6 +24,12 @@ config CPU_C7524
 	  Found in AM275, AM67A and J722 variant SoC. The core has the
 	  internal lookup table and histogram accelerator.
 
+config C7X_SOC_SYSTEM_HALT_HOOK
+	bool
+	help
+	  The SoC provides z_soc_system_halt_hook(), which arch_system_halt()
+	  calls with interrupts locked before the core powers off.
+
 menu "C7x Architecture Options"
 
 config C7X_DBG_TRACE

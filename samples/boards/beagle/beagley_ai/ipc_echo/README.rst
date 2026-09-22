@@ -63,6 +63,12 @@ depends on probe order:
 
    grep -l 7e000000.dsp /sys/class/remoteproc/remoteproc*/name
 
+On ``stop`` the kernel sends a shutdown request through the mailbox. The
+sample acknowledges it from the mailbox interrupt and idles the core, and the
+kernel then resets it. After a fatal error the core acknowledges the request
+from its halt loop instead, so ``stop`` also succeeds on a core that has
+crashed.
+
 Sample Output
 *************
 
@@ -72,6 +78,7 @@ Sample Output
    I: BeagleY-AI C7x IPC echo starting
    I: announced "beagley-ipc-echo", waiting for messages
    I: echoing 16 bytes
+   I: shutdown requested
 
 Linux sees the service appear on the rpmsg bus:
 

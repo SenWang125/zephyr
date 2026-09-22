@@ -11,10 +11,12 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/ipm.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/sys/poweroff.h>
 
 #include <openamp/open_amp.h>
 #include <metal/device.h>
 #include <resource_table.h>
+#include <soc.h>
 
 LOG_MODULE_REGISTER(ipc_echo, LOG_LEVEL_INF);
 
@@ -38,11 +40,17 @@ static K_SEM_DEFINE(rx_sem, 0, 1);
 
 static void ipm_callback(const struct device *dev, void *context, uint32_t id, volatile void *data)
 {
-	ARG_UNUSED(dev);
 	ARG_UNUSED(context);
 	ARG_UNUSED(id);
-	ARG_UNUSED(data);
 
+	/* answered here, as this interrupt still runs after a fault has aborted main */
+	if (data != NULL && *(volatile uint32_t *)data == TI_K3_RP_MBOX_SHUTDOWN) {
+		uint32_t ack = TI_K3_RP_MBOX_SHUTDOWN_ACK;
+
+		LOG_INF("shutdown requested");
+		ipm_send(dev, 0, 0, &ack, sizeof(ack));
+		sys_poweroff();
+	}
 	k_sem_give(&rx_sem);
 }
 

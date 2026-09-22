@@ -8,4 +8,5 @@ zephyr_include_directories(.)
 zephyr_library_sources(soc.c)
 
 zephyr_library_sources_ifdef(CONFIG_POWEROFF poweroff.c)
+zephyr_library_sources_ifdef(CONFIG_C7X_SOC_SYSTEM_HALT_HOOK fatal.c)
 zephyr_library_sources(mmu_regions.c)

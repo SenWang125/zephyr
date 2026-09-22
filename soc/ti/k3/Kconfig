@@ -36,5 +36,7 @@ config SOC_FAMILY_TI_K3_C7X
 	select GEN_ISR_TABLES
 	select DYNAMIC_INTERRUPTS
 	select HAS_POWEROFF
+	select C7X_SOC_SYSTEM_HALT_HOOK if MBOX_TI_OMAP_MAILBOX && POWEROFF && \
+		$(dt_chosen_enabled,$(DT_CHOSEN_Z_IPC))
 
 endif # SOC_FAMILY_TI_K3

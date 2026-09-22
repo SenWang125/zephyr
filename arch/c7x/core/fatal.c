@@ -65,6 +65,10 @@ FUNC_NORETURN void arch_system_halt(unsigned int reason)
 
 	(void)arch_irq_lock();
 
+#ifdef CONFIG_C7X_SOC_SYSTEM_HALT_HOOK
+	z_soc_system_halt_hook();
+#endif
+
 #ifdef CONFIG_POWEROFF
 	sys_poweroff();
 #else

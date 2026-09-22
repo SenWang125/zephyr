@@ -25,6 +25,7 @@ static inline bool arch_is_in_isr(void)
 	return _kernel.cpus[0].nested != 0U;
 }
 
+void z_soc_system_halt_hook(void);
 FUNC_NORETURN void z_c7x_fatal_error(unsigned int reason, const struct arch_esf *esf);
 FUNC_NORETURN void z_c7x_boot_init(void);
 FUNC_NORETURN void z_prep_c(void);
