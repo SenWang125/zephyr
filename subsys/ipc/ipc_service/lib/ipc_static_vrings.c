@@ -7,6 +7,10 @@
 #include <zephyr/ipc/ipc_static_vrings.h>
 #include <zephyr/cache.h>
 
+/* libmetal takes page_shift as unsigned int. A bare -1 would be a sign-change conversion.
+ */
+#define METAL_IO_NO_PAGING	((unsigned int)-1)
+
 #define RPMSG_VQ_0		(0) /* TX virtqueue queue index */
 #define RPMSG_VQ_1		(1) /* RX virtqueue queue index */
 
@@ -131,7 +135,8 @@ int ipc_static_vrings_init(struct ipc_static_vrings *vr, unsigned int role)
 	vr->shm_physmap[0] = vr->shm_addr;
 
 	metal_io_init(&vr->shm_io, (void *)vr->shm_addr,
-		      vr->shm_physmap, vr->shm_size, -1, 0, NULL);
+		      vr->shm_physmap, vr->shm_size,
+		      METAL_IO_NO_PAGING, 0, NULL);
 
 	return vq_setup(vr, role);
 }
