@@ -18,6 +18,7 @@ Guides on how to set up toolchains for Zephyr development.
    hexagon_llvm.rst
    iar_arm_toolchain.rst
    intel_oneapi_toolkit.rst
+   ti_c7000_cgt.rst
    xc32_toolchain.rst
 
    host.rst
