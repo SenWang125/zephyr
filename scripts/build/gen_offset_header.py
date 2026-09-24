@@ -19,6 +19,8 @@ import sys
 from elftools.elf.elffile import ELFFile
 from elftools.elf.sections import SymbolTableSection
 
+EM_TI_C7X = 145
+
 
 def get_symbol_table(obj):
     for section in obj.iter_sections():
@@ -44,18 +46,25 @@ def gen_offset_header(input_file, output_file):
     )
 
     obj = ELFFile(input_file)
+    size_encoded = obj.header['e_machine'] == EM_TI_C7X
+
     for sym in get_symbol_table(obj).iter_symbols():
         if isinstance(sym.name, bytes):
             sym.name = str(sym.name, 'ascii')
 
         if not sym.name.endswith(('_OFFSET', '_SIZEOF')):
             continue
-        if sym.entry['st_shndx'] != 'SHN_ABS':
-            continue
-        if sym.entry['st_info']['bind'] != 'STB_GLOBAL':
+
+        if sym.entry['st_shndx'] == 'SHN_ABS':
+            if sym.entry['st_info']['bind'] != 'STB_GLOBAL':
+                continue
+            value = sym.entry['st_value']
+        elif size_encoded and sym.entry['st_size'] > 0:
+            value = sym.entry['st_size'] - 1
+        else:
             continue
 
-        output_file.write(f"#define {sym.name} 0x{sym.entry['st_value']:x}\n")
+        output_file.write(f"#define {sym.name} 0x{value:x}\n")
 
     output_file.write(f"\n#endif /* {include_guard} */\n")
 
