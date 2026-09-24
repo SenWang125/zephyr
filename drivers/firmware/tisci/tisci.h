@@ -487,11 +487,14 @@ struct tisci_msg_resp_get_clock_state {
  * Request type is TISCI_MSG_SET_CLOCK_PARENT, response is generic
  * ACK / NACK message.
  */
+/* clk32 and parent32 are never assigned, but sizeof(req) is the length sent */
 struct tisci_msg_req_set_clock_parent {
 	struct tisci_msg_hdr hdr;
 	uint32_t dev_id;
 	uint8_t clk_id;
 	uint8_t parent_id;
+	uint32_t clk32;
+	uint32_t parent32;
 } __packed;
 
 /**
@@ -653,6 +656,7 @@ struct tisci_msg_req_set_clock_freq {
 	uint64_t target_freq_hz;
 	uint64_t max_freq_hz;
 	uint8_t clk_id;
+	uint32_t clk32;
 } __packed;
 
 /**
