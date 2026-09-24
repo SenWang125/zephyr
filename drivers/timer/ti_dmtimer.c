@@ -184,6 +184,13 @@ static int sys_clock_driver_init(void)
 
 	IRQ_CONNECT(TIMER_IRQ_NUM, TIMER_IRQ_PRIO, ti_dmtimer_isr, NULL, TIMER_IRQ_FLAGS);
 
+	/* A restarted core finds the timer running with its last interrupt still pending */
+	TI_DM_TIMER_WRITE(systick_timer_dev, 0, TCLR, ST);
+	sys_write32(TI_DM_TIMER_IRQSTATUS_MAT_IT_FLAG_MASK |
+			    TI_DM_TIMER_IRQSTATUS_OVF_IT_FLAG_MASK |
+			    TI_DM_TIMER_IRQSTATUS_TCAR_IT_FLAG_MASK,
+		    DEVICE_MMIO_GET(systick_timer_dev) + TI_DM_TIMER_IRQSTATUS);
+
 	/* Disable prescalar */
 	TI_DM_TIMER_WRITE(systick_timer_dev, 0, TCLR, PRE);
 
