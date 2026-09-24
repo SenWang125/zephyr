@@ -35,7 +35,24 @@ LOG_MODULE_REGISTER(ti_am654_timer, CONFIG_KERNEL_LOG_LEVEL);
 const int32_t z_sys_timer_irq_for_test = TIMER_IRQ_NUM;
 #endif
 
-#define CYC_PER_TICK ((uint32_t)(sys_clock_hw_cycles_per_sec() / CONFIG_SYS_CLOCK_TICKS_PER_SEC))
+/* The counter runs on its input clock when that clock has a fixed rate, else at the cycle rate */
+#if DT_NODE_HAS_PROP(SYSTEM_TIMER_NODE, clocks)
+#if DT_NODE_HAS_PROP(DT_CLOCKS_CTLR(SYSTEM_TIMER_NODE), clock_frequency)
+#define TIMER_FIXED_HZ DT_PROP(DT_CLOCKS_CTLR(SYSTEM_TIMER_NODE), clock_frequency)
+#endif
+#endif
+
+#ifdef TIMER_FIXED_HZ
+#define TIMER_HZ      TIMER_FIXED_HZ
+#define CYC_PER_COUNT (CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC / TIMER_HZ)
+BUILD_ASSERT(CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC % TIMER_HZ == 0,
+	     "the system cycle rate must be a multiple of the timer clock");
+#else
+#define TIMER_HZ      sys_clock_hw_cycles_per_sec()
+#define CYC_PER_COUNT 1U
+#endif
+
+#define CYC_PER_TICK ((uint32_t)(TIMER_HZ / CONFIG_SYS_CLOCK_TICKS_PER_SEC))
 
 #define MAX_TICKS ((k_ticks_t)(UINT32_MAX / CYC_PER_TICK) - 1)
 
@@ -136,7 +153,7 @@ uint32_t sys_clock_cycle_get_32(void)
 
 	k_spinlock_key_t key = k_spin_lock(&data->lock);
 
-	uint32_t curr_cycle = TI_DM_TIMER_READ(systick_timer_dev, TCRR);
+	uint32_t curr_cycle = TI_DM_TIMER_READ(systick_timer_dev, TCRR) * CYC_PER_COUNT;
 
 	k_spin_unlock(&data->lock, key);
 
