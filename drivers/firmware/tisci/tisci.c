@@ -138,7 +138,7 @@ static int tisci_get_response(const struct device *dev, struct tisci_xfer *xfer)
 	}
 
 	if (xfer->rx_message.size > config->max_msg_size) {
-		LOG_ERR("rx_message.size [ %d ] > max_msg_size\n", xfer->rx_message.size);
+		LOG_ERR("rx_message.size [ %zu ] > max_msg_size", xfer->rx_message.size);
 		k_sem_give(&data->data_sem);
 		return -EINVAL;
 	}
