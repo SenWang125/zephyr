@@ -1,0 +1,19 @@
+# Copyright (c) 2026 Texas Instruments Incorporated
+# SPDX-License-Identifier: Apache-2.0
+
+config TI_DMTIMER_C7X
+	bool "TI DMTimer system clock driver for C7x"
+	depends on SOC_FAMILY_TI_K3_C7X && DT_HAS_TI_AM654_TIMER_ENABLED
+	select TIMER_HAS_64BIT_CYCLE_COUNTER
+	help
+	  System clock from a K3 DMTimer routed to the C7x through the CLEC,
+	  with cycles counted by the C7x time stamp counter.
+
+config TI_DMTIMER_C7X_CLOCK_HZ
+	int "DMTimer input clock rate (Hz)"
+	depends on TI_DMTIMER_C7X
+	default 25000000
+	help
+	  Rate of the DMTimer functional clock, 25 MHz (MCU_HFOSC0) by
+	  default. A board with another input clock overrides this here;
+	  the ti,am654-timer binding declares no clock-frequency property.
