@@ -1,0 +1,44 @@
+# Copyright (c) 2026 Texas Instruments Incorporated
+# SPDX-License-Identifier: Apache-2.0
+
+title: TI C7x CLEC
+
+description: |
+  Compute-cluster Local Event Controller of a TI C7x DSP. It routes SoC-level
+  events onto the core's internal event lines through one 32-bit MRR (Mux
+  Routing Register) per input event, at CLEC_BASE + 0x80000 + event * 0x100.
+
+  Interrupt specifier: <event irq priority flags>
+    event    : CLEC input event index (GIC SPI family inputs sit at +256)
+    irq      : C7x internal event line, 0-63; the number the kernel uses
+    priority : C7x event priority programmed into the MRR
+    flags    : C7X_CLEC_LEVEL or C7X_CLEC_EDGE (dt-bindings/interrupt-controller/ti-c7x-clec.h)
+
+  Every node that names this controller as its interrupt parent has its
+  route programmed by the driver; there is no separate routing table.
+
+compatible: "ti,c7x-clec"
+
+include: base.yaml
+
+properties:
+  reg:
+    required: true
+
+  "#interrupt-cells":
+    type: int
+    const: 4
+
+  ti,num-events:
+    type: int
+    description: Number of CLEC input event slots (512 on C7x256v).
+
+  ti,num-c7x-events:
+    type: int
+    description: Number of C7x internal event lines (64).
+
+interrupt-cells:
+  - event
+  - irq
+  - priority
+  - flags
