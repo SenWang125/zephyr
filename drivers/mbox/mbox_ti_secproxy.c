@@ -68,6 +68,10 @@ struct secproxy_mailbox_data {
 	mbox_callback_t cb[MAILBOX_MAX_CHANNELS];
 	void *user_data[MAILBOX_MAX_CHANNELS];
 	bool channel_enable[MAILBOX_MAX_CHANNELS];
+#ifdef CONFIG_MBOX_TI_SECPROXY_POLL
+	bool poll_channel[MAILBOX_MAX_CHANNELS];
+	atomic_t poll_started;
+#endif
 
 	DEVICE_MMIO_NAMED_RAM(target_data);
 	DEVICE_MMIO_NAMED_RAM(rt);
@@ -80,6 +84,11 @@ struct secproxy_mailbox_config {
 	DEVICE_MMIO_NAMED_ROM(rt);
 	DEVICE_MMIO_NAMED_ROM(scfg);
 	int32_t interrupts[MAILBOX_MAX_CHANNELS];
+#ifdef CONFIG_MBOX_TI_SECPROXY_POLL
+	struct k_thread *poll_thread;
+	k_thread_stack_t *poll_stack;
+	size_t poll_stack_size;
+#endif
 };
 
 static inline int secproxy_verify_thread(struct secproxy_thread *spt, uint8_t dir)
@@ -184,6 +193,62 @@ static void secproxy_mailbox_isr(const struct device *dev, uint32_t channel)
 	}
 }
 
+#ifdef CONFIG_MBOX_TI_SECPROXY_POLL
+/* polled receive for RX threads with no interrupt in devicetree */
+static void secproxy_poll_entry(void *p1, void *p2, void *p3)
+{
+	const struct device *dev = p1;
+	struct secproxy_mailbox_data *data = DEV_DATA(dev);
+
+	ARG_UNUSED(p2);
+	ARG_UNUSED(p3);
+
+	while (true) {
+		bool any = false;
+
+		for (uint32_t channel = 0; channel < MAILBOX_MAX_CHANNELS; channel++) {
+			if (data->poll_channel[channel]) {
+				secproxy_mailbox_isr(dev, channel);
+				any = true;
+			}
+		}
+		if (!any) {
+			/* Nothing left to poll. Hand the slot back. An enable that
+			 * raced this sees poll_started clear and starts a new thread.
+			 * One that saw it set is caught by the re-check.
+			 */
+			atomic_clear(&data->poll_started);
+			for (uint32_t channel = 0; channel < MAILBOX_MAX_CHANNELS; channel++) {
+				any = any || data->poll_channel[channel];
+			}
+			if (!any || !atomic_cas(&data->poll_started, 0, 1)) {
+				return;
+			}
+		}
+		k_sleep(K_MSEC(CONFIG_MBOX_TI_SECPROXY_POLL_INTERVAL_MS));
+	}
+}
+
+static void secproxy_poll_start(const struct device *dev)
+{
+	const struct secproxy_mailbox_config *cfg = DEV_CFG(dev);
+	struct secproxy_mailbox_data *data = DEV_DATA(dev);
+
+	if (k_is_pre_kernel()) {
+		return;
+	}
+
+	if (!atomic_cas(&data->poll_started, 0, 1)) {
+		return;
+	}
+
+	k_thread_create(cfg->poll_thread, cfg->poll_stack, cfg->poll_stack_size,
+			secproxy_poll_entry, (void *)dev, NULL, NULL,
+			CONFIG_MBOX_TI_SECPROXY_POLL_PRIORITY, 0, K_NO_WAIT);
+	k_thread_name_set(cfg->poll_thread, "secproxy_poll");
+}
+#endif /* CONFIG_MBOX_TI_SECPROXY_POLL */
+
 static int secproxy_mailbox_send(const struct device *dev, uint32_t channel,
 				 const struct mbox_msg *msg)
 {
@@ -202,6 +267,10 @@ static int secproxy_mailbox_send(const struct device *dev, uint32_t channel,
 		LOG_ERR("Empty message not allowed");
 		return -EINVAL;
 	}
+
+#ifdef CONFIG_MBOX_TI_SECPROXY_POLL
+	secproxy_poll_start(dev);
+#endif
 
 	if (channel >= MAILBOX_MAX_CHANNELS) {
 		LOG_ERR("Channel %d exceeds max channels", channel);
@@ -312,7 +381,9 @@ static void secproxy_mailbox_flush_thread(const struct device *dev, uint32_t cha
 
 static int secproxy_mailbox_set_enabled(const struct device *dev, uint32_t channel, bool enable)
 {
+#ifndef CONFIG_MBOX_TI_SECPROXY_POLL
 	const struct secproxy_mailbox_config *cfg = DEV_CFG(dev);
+#endif
 	struct secproxy_mailbox_data *data = DEV_DATA(dev);
 	k_spinlock_key_t key;
 
@@ -324,6 +395,20 @@ static int secproxy_mailbox_set_enabled(const struct device *dev, uint32_t chann
 		return -EALREADY;
 	}
 
+#ifdef CONFIG_MBOX_TI_SECPROXY_POLL
+	key = k_spin_lock(&data->lock);
+	data->channel_enable[channel] = enable;
+	if (enable) {
+		secproxy_mailbox_flush_thread(dev, channel);
+	}
+	data->poll_channel[channel] = enable;
+	k_spin_unlock(&data->lock, key);
+
+	if (enable) {
+		secproxy_poll_start(dev);
+	}
+	return 0;
+#else
 	if (cfg->interrupts[channel] < 0) {
 		LOG_ERR("No interrupt configured for channel %d", channel);
 		return -EINVAL;
@@ -342,6 +427,7 @@ static int secproxy_mailbox_set_enabled(const struct device *dev, uint32_t chann
 	k_spin_unlock(&data->lock, key);
 
 	return 0;
+#endif /* CONFIG_MBOX_TI_SECPROXY_POLL */
 }
 
 static DEVICE_API(mbox, secproxy_mailbox_driver_api) = {
@@ -381,13 +467,29 @@ static DEVICE_API(mbox, secproxy_mailbox_driver_api) = {
 		),                                                                                \
 		())
 
+#ifdef CONFIG_MBOX_TI_SECPROXY_POLL
+#define SECPROXY_POLL_DEFINE(idx)                                                                 \
+	static struct k_thread secproxy_poll_thread_##idx;                                        \
+	static K_THREAD_STACK_DEFINE(secproxy_poll_stack_##idx,                                   \
+				     CONFIG_MBOX_TI_SECPROXY_POLL_STACK_SIZE);
+#define SECPROXY_POLL_INIT(idx)                                                                   \
+	.poll_thread = &secproxy_poll_thread_##idx,                                               \
+	.poll_stack = secproxy_poll_stack_##idx,                                                  \
+	.poll_stack_size = K_THREAD_STACK_SIZEOF(secproxy_poll_stack_##idx),
+#else
+#define SECPROXY_POLL_DEFINE(idx)
+#define SECPROXY_POLL_INIT(idx)
+#endif
+
 #define MAILBOX_INSTANCE_DEFINE(idx)                                                              \
 	LISTIFY(MAILBOX_MAX_CHANNELS, SECPROXY_THREAD_ISR, (), idx)                               \
+	SECPROXY_POLL_DEFINE(idx)                                                                 \
 	static struct secproxy_mailbox_data secproxy_mailbox_##idx##_data;                        \
 	const static struct secproxy_mailbox_config secproxy_mailbox_##idx##_config = {           \
 		DEVICE_MMIO_NAMED_ROM_INIT_BY_NAME(target_data, DT_DRV_INST(idx)),                \
 		DEVICE_MMIO_NAMED_ROM_INIT_BY_NAME(rt, DT_DRV_INST(idx)),                         \
 		DEVICE_MMIO_NAMED_ROM_INIT_BY_NAME(scfg, DT_DRV_INST(idx)),                       \
+		SECPROXY_POLL_INIT(idx)                                                           \
 		.interrupts = {LISTIFY(MAILBOX_MAX_CHANNELS,                                     \
 			 SECPROXY_IRQ_OR_INVALID, (,), idx) }};                              \
 	static int secproxy_mailbox_##idx##_init(const struct device *dev)                        \
