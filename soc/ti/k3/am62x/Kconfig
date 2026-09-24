@@ -20,3 +20,6 @@ config SOC_SERIES_AM62X_M4
 	select MM_DRV
 	select MM_TI_RAT
 	select SOC_EARLY_INIT_HOOK
+
+config SOC_SERIES_AM62X_C7X
+	select CPU_C7504

@@ -1,0 +1,66 @@
+/*
+ * Copyright (c) 2026 Texas Instruments Incorporated
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <zephyr/dt-bindings/interrupt-controller/ti-c7x-clec.h>
+
+/ {
+	main_timer1: timer@2410000 {
+		compatible = "ti,am654-timer";
+		reg = <0x00 0x02410000 0x00 0x400>;
+		status = "disabled";
+	};
+
+	uart0_clk: uart0-clock {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <48000000>;
+	};
+
+	main_uart0: uart@2800000 {
+		compatible = "ti,am654-uart";
+		reg = <0x00 0x02800000 0x00 0x100>;
+		clocks = <&uart0_clk>;
+		clock-names = "fclk";
+		current-speed = <115200>;
+		status = "disabled";
+	};
+
+	secure_proxy_main: mailbox@4d000000 {
+		compatible = "ti,secure-proxy";
+		reg = <0x00 0x4d000000 0x00 0x80000>,
+		      <0x00 0x4a600000 0x00 0x80000>,
+		      <0x00 0x4a400000 0x00 0x80000>;
+		reg-names = "target_data", "rt", "scfg";
+		#mbox-cells = <1>;
+		status = "disabled";
+	};
+
+	/* The C7x_0_0 context uses secure-proxy threads 20 (rx) and 21 (tx). */
+	dmsc: system-controller@44043000 {
+		compatible = "ti,k2g-sci";
+		reg = <0x00 0x44043000 0x00 0xfe0>;
+		reg-names = "debug_messages";
+		mbox-names = "rx", "tx";
+		mboxes = <&secure_proxy_main 20>, <&secure_proxy_main 21>;
+		ti,host-id = <20>;
+		status = "okay";
+
+		k3_clks: clock-controller {
+			compatible = "ti,k2g-sci-clk";
+			#clock-cells = <2>;
+			status = "okay";
+		};
+	};
+
+	/* Cluster 2: fifo 0 is C7x_0 to A53, fifo 1 is A53 to C7x_0. */
+	mailbox_c7x: mailbox@29020000 {
+		compatible = "ti,omap-mailbox-c7x";
+		reg = <0x00 0x29020000 0x00 0x200>;
+		#mbox-cells = <1>;
+		interrupts = <198 59 6 C7X_CLEC_LEVEL>;
+		interrupt-parent = <&clec>;
+		status = "okay";
+	};
+};

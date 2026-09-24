@@ -15,6 +15,9 @@ family:
       cpuclusters:
       - name: m4
       - name: a53
+    - name: am62d2
+      cpuclusters:
+      - name: c71_0
   - name: am62lx
     socs:
     - name: am62l3
@@ -49,3 +52,4 @@ family:
       cpuclusters:
       - name: main_r5f0_0
       - name: mcu_r5f0_0
+      - name: c71_0

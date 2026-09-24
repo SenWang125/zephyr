@@ -1,0 +1,104 @@
+/*
+ * Copyright (c) 2026 Texas Instruments Incorporated
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <ti/k3-j722s-c7x-main.dtsi>
+#include <zephyr/dt-bindings/interrupt-controller/ti-c7x-clec.h>
+
+/ {
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu0: cpu@0 {
+			device_type = "cpu";
+			compatible = "ti,c7x";
+			reg = <0>;
+			clock-frequency = <1000000000>;
+		};
+	};
+
+	/* UMC_MEM_MAIN, the whole first L2 bank */
+	l2sram: memory@7e000000 {
+		compatible = "zephyr,memory-region", "mmio-sram";
+		reg = <0x00 0x7e000000 0x00 0x00200000>;
+		zephyr,memory-region = "L2SRAM";
+		zephyr,memory-region-flags = "rwx";
+	};
+
+	/* UMC_MEM_AUX, the second L2 bank */
+	l2aux: memory@7f000000 {
+		compatible = "zephyr,memory-region", "mmio-sram";
+		reg = <0x00 0x7f000000 0x00 0x00080000>;
+		zephyr,memory-region = "L2AUX";
+		zephyr,memory-region-flags = "rwx";
+	};
+
+	/* The CLEC of C7x_0. C7x_1 has its own at 0x7d200000. */
+	clec: interrupt-controller@7c200000 {
+		compatible = "ti,c7x-clec";
+		reg = <0x00 0x7c200000 0x00 0x00100000>;
+		interrupt-controller;
+		#interrupt-cells = <4>;
+		ti,num-events = <512>;
+		ti,num-c7x-events = <64>;
+		status = "okay";
+	};
+
+	c7x_dru: dma@7c400000 {
+		compatible = "ti,c7x-dru";
+		reg = <0x00 0x7c400000 0x00 0x00100000>,
+		      <0x00 0x7c200000 0x00 0x00100000>;
+		reg-names = "dru", "clec";
+		ti,c7x-event = <32>;
+		ti,local-event-start = <128>;
+		#dma-cells = <0>;
+		status = "disabled";
+	};
+
+	/* device windows the C7x maps, as the MCU+ SDK does */
+	cbass_main: bus@0 {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges = <0x00 0x00000000 0x00 0x00000000 0x00 0x20000000>,
+			 <0x00 0x20000000 0x00 0x20000000 0x00 0x20000000>,
+			 <0x00 0x40000000 0x00 0x40000000 0x00 0x20000000>,
+			 <0x00 0x60000000 0x00 0x60000000 0x00 0x04000000>;
+	};
+
+	main_conf: syscon@100000 {
+		compatible = "ti,control-module";
+		reg = <0x00 0x00100000 0x00 0x00020000>;
+		#clksel-cells = <2>;
+		ti,unlock-offsets = <0x1008 0x5008>;
+	};
+};
+
+&main_timer1 {
+	interrupts = <377 9 6 C7X_CLEC_EDGE>;
+	interrupt-parent = <&clec>;
+	clksel = <&main_conf 0x81b4 0x0>;
+	status = "okay";
+};
+
+&main_uart0 {
+	interrupts = <434 11 6 C7X_CLEC_LEVEL>;
+	interrupt-parent = <&clec>;
+	status = "disabled";
+};
+
+&secure_proxy_main {
+	/*
+	 * CONFIG_MBOX_TI_SECPROXY_POLL receives by polling and never programs
+	 * this route, so the line only has to be unique.
+	 */
+	interrupt-names = "rx_20";
+	interrupts = <37 61 6 C7X_CLEC_LEVEL>;
+	interrupt-parent = <&clec>;
+	status = "okay";
+};

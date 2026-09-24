@@ -1,0 +1,162 @@
+/*
+ * Copyright (c) 2026 Texas Instruments Incorporated
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <zephyr/dt-bindings/interrupt-controller/ti-c7x-clec.h>
+
+/ {
+	power-domains {
+		mcasp0_pd: mcasp0-pd {
+			compatible = "ti,sci-pm-domain";
+			tisci,device-id = <190>;
+			tisci,device-mode = "SHARED";
+			#power-domain-cells = <0>;
+			zephyr,pm-device-runtime-auto;
+		};
+
+		mcasp1_pd: mcasp1-pd {
+			compatible = "ti,sci-pm-domain";
+			tisci,device-id = <191>;
+			tisci,device-mode = "SHARED";
+			#power-domain-cells = <0>;
+			zephyr,pm-device-runtime-auto;
+		};
+
+		mcasp2_pd: mcasp2-pd {
+			compatible = "ti,sci-pm-domain";
+			tisci,device-id = <192>;
+			tisci,device-mode = "SHARED";
+			#power-domain-cells = <0>;
+			zephyr,pm-device-runtime-auto;
+		};
+	};
+
+	main_timer2: timer@2420000 {
+		compatible = "ti,am654-timer";
+		reg = <0x00 0x02420000 0x00 0x400>;
+		status = "disabled";
+	};
+
+	uart0_clk: uart0-clock {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <48000000>;
+	};
+
+	main_uart0: uart@2800000 {
+		compatible = "ti,am654-uart";
+		reg = <0x00 0x02800000 0x00 0x100>;
+		clocks = <&uart0_clk>;
+		clock-names = "fclk";
+		current-speed = <115200>;
+		status = "disabled";
+	};
+
+	secure_proxy_main: mailbox@4d000000 {
+		compatible = "ti,secure-proxy";
+		reg = <0x00 0x4d000000 0x00 0x80000>,
+		      <0x00 0x4a600000 0x00 0x80000>,
+		      <0x00 0x4a400000 0x00 0x80000>;
+		reg-names = "target_data", "rt", "scfg";
+		#mbox-cells = <1>;
+		status = "disabled";
+	};
+
+	/* Upstream model (dts/vendor/ti/am64x_main.dtsi): TISCI owns the clock controller as
+	 * a child; the C7x context uses secure-proxy threads 20 (rx) and 21 (tx).
+	 */
+	dmsc: system-controller@44043000 {
+		compatible = "ti,k2g-sci";
+		reg = <0x00 0x44043000 0x00 0xfe0>;
+		reg-names = "debug_messages";
+		mbox-names = "rx", "tx";
+		mboxes = <&secure_proxy_main 20>, <&secure_proxy_main 21>;
+		/* TISCI host id for the C7x_0_0 context (see the port's
+		 * soc_sciclient.c: host context C7X_0_0 = 20).
+		 */
+		ti,host-id = <20>;
+		status = "okay";
+
+		k3_clks: clock-controller {
+			compatible = "ti,k2g-sci-clk";
+			#clock-cells = <2>;
+			status = "okay";
+		};
+	};
+
+	mailbox_c7x: mailbox@29010000 {
+		compatible = "ti,omap-mailbox-c7x";
+		reg = <0x00 0x29010000 0x00 0x200>;
+		#mbox-cells = <1>;
+		interrupts = <193 60 6 C7X_CLEC_LEVEL>;
+		interrupt-parent = <&clec>;
+		status = "okay";
+	};
+
+	mcasp0: mcasp@2b00000 {
+		compatible = "ti,am62dx-mcasp";
+		power-domains = <&mcasp0_pd>;
+		zephyr,pm-device-runtime-auto;
+		reg = <0x00 0x02b00000 0x00 0x2000>,
+		      <0x00 0x02b08000 0x00 0x400>;
+		reg-names = "mpu", "dat";
+		op-mode = <0>;
+		serial-dir = <0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0>;
+		dmas = <&main_bcdma 0 0xc500 0>, <&main_bcdma 0 0x4500 0>;
+		dma-names = "tx", "rx";
+		status = "disabled";
+	};
+
+	mcasp1: mcasp@2b10000 {
+		compatible = "ti,am62dx-mcasp";
+		power-domains = <&mcasp1_pd>;
+		zephyr,pm-device-runtime-auto;
+		reg = <0x00 0x02b10000 0x00 0x2000>,
+		      <0x00 0x02b18000 0x00 0x400>;
+		reg-names = "mpu", "dat";
+		op-mode = <0>;
+		serial-dir = <0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0>;
+		dmas = <&main_bcdma 0 0xc501 0>, <&main_bcdma 0 0x4501 0>;
+		dma-names = "tx", "rx";
+		status = "disabled";
+	};
+
+	mcasp2: mcasp@2b20000 {
+		compatible = "ti,am62dx-mcasp";
+		power-domains = <&mcasp2_pd>;
+		zephyr,pm-device-runtime-auto;
+		reg = <0x00 0x02b20000 0x00 0x2000>,
+		      <0x00 0x02b28000 0x00 0x400>;
+		reg-names = "mpu", "dat";
+		/* GIC SPI 240/239 on Linux; CLEC input = SPI + 256; priorities as
+		 * the SDK template
+		 */
+		interrupts = <496 58 4 C7X_CLEC_LEVEL>, <495 57 3 C7X_CLEC_LEVEL>;
+		interrupt-names = "tx", "rx";
+		interrupt-parent = <&clec>;
+		dmas = <&main_bcdma 0 0xc502 0>, <&main_bcdma 0 0x4502 0>;
+		dma-names = "tx", "rx";
+		status = "disabled";
+	};
+
+	main_bcdma: dma-controller@485c0100 {
+		compatible = "ti,am64-dmss-bcdma";
+		reg = <0x00 0x485c0100 0x00 0x100>,
+		      <0x00 0x4c000000 0x00 0x20000>,
+		      <0x00 0x4a820000 0x00 0x20000>,
+		      <0x00 0x4aa40000 0x00 0x20000>,
+		      <0x00 0x4bc00000 0x00 0x100000>,
+		      <0x00 0x48600000 0x00 0x8000>,
+		      <0x00 0x484a4000 0x00 0x2000>,
+		      <0x00 0x484c2000 0x00 0x2000>,
+		      <0x00 0x48420000 0x00 0x2000>;
+		reg-names = "gcfg", "bchanrt", "rchanrt", "tchanrt", "ringrt",
+			    "ring", "tchan", "rchan", "bchan";
+		#dma-cells = <3>;
+		ti,sci-dev-id = <26>;
+		interrupts = <222 1 6 C7X_CLEC_EDGE>, <223 2 6 C7X_CLEC_EDGE>;
+		interrupt-parent = <&clec>;
+		status = "okay";
+	};
+};

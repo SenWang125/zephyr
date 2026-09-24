@@ -5,4 +5,77 @@ if SOC_FAMILY_TI_K3
 
 rsource "*/Kconfig.defconfig"
 
+if SOC_FAMILY_TI_K3_C7X
+
+config NUM_IRQS
+	default 64
+
+config SYS_CLOCK_HW_CYCLES_PER_SEC
+	default $(dt_node_int_prop_int,/cpus/cpu@0,clock-frequency)
+
+config BUILD_OUTPUT_BIN
+	default n
+
+config KERNEL_ENTRY
+	default "_c_int00_secure"
+
+config SYS_CLOCK_TICKS_PER_SEC
+	default 1000
+
+DT_CHOSEN_Z_SRAM = zephyr,sram
+
+# 16 MB above the firmware DDR for run-time mappings, below the next boot window
+config KERNEL_VM_SIZE
+	default $(add_hex,$(dt_chosen_reg_size_hex,$(DT_CHOSEN_Z_SRAM)),0x1000000)
+
+# minimal libc's word-at-a-time memcpy and memset
+config MINIMAL_LIBC_OPTIMIZE_STRING_FOR_SIZE
+	default n
+
+# The C7x L1D cache line is 128 bytes.
+config DCACHE_LINE_SIZE
+	default 128
+
+config CACHE_MANAGEMENT
+	default y
+
+config OPENAMP_RSC_TABLE
+	default y if IPC_SERVICE
+
+# the TI Linux remoteproc and rpmsg drivers take 256-buffer vrings aligned to a page
+config OPENAMP_RSC_TABLE_NUM_RPMSG_BUFF
+	default 256
+
+config OPENAMP_VRING_ALIGNMENT
+	default 4096
+
+# no secure-proxy RX interrupt route to the C7x, so poll
+config MBOX_TI_SECPROXY_POLL
+	default y if MBOX_TI_SECURE_PROXY
+
+if PM_DEVICE
+
+config PM_DEVICE_RUNTIME
+	default y
+
+config POWER_DOMAIN
+	default y
+
+endif # PM_DEVICE
+
+config TI_DMTIMER_C7X
+	default y
+
+# driven by ti_dmtimer_c7x.c on the C7x
+config TI_DM_TIMER
+	default n
+
+config MAIN_STACK_SIZE
+	default 8192
+
+config ISR_STACK_SIZE
+	default 8192
+
+endif # SOC_FAMILY_TI_K3_C7X
+
 endif # SOC_FAMILY_TI_K3
