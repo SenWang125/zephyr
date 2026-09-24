@@ -1073,6 +1073,18 @@ C library:
     - cpp
     - sample.cpp
 
+C7x arch:
+  status: maintained
+  maintainers:
+    - Sen Wang (TBD)
+  files:
+    - TBD
+  labels:
+    - "area: C7x"
+  tests:
+    - arch
+    - kernel
+
 CMSIS API layer:
   status: odd fixes
   collaborators:
@@ -6433,6 +6445,15 @@ Tests:
     - cmake/toolchain/
     - include/zephyr/toolchain/
     - include/zephyr/toolchain.h
+  labels:
+    - "area: Toolchains"
+
+"Toolchain TI C7000 CGT":
+  status: maintained
+  maintainers:
+    - Sen Wang (TBD)
+  files:
+    - TBD
   labels:
     - "area: Toolchains"
 
