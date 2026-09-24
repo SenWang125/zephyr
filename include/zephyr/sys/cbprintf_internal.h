@@ -587,13 +587,19 @@ extern "C" {
 #ifdef __cplusplus
 #define Z_CBPRINTF_ARG_SIZE(v) z_cbprintf_cxx_arg_size(v)
 #else
+#if TOOLCHAIN_HAS_C_AUTO_TYPE
+#define Z_CBPRINTF_AUTO_TYPE(v) __auto_type
+#else
+/* ?. Reproduces the array/function decay __auto_type would apply. */
+#define Z_CBPRINTF_AUTO_TYPE(v) __typeof__(0 ? (v) : (v))
+#endif
 #define Z_CONSTIFY(v) ({ \
-	__auto_type _uv = (v); \
+	Z_CBPRINTF_AUTO_TYPE(v) _uv = (v); \
 	__typeof__(_uv) const _cv = _uv; \
 	_cv; \
 })
 #define Z_CBPRINTF_ARG_SIZE(v) ({\
-	__auto_type __v = Z_ARGIFY(Z_CONSTIFY(v)); \
+	Z_CBPRINTF_AUTO_TYPE(Z_ARGIFY(Z_CONSTIFY(v))) __v = Z_ARGIFY(Z_CONSTIFY(v)); \
 	/* Static code analysis may complain about unused variable. */ \
 	(void)__v; \
 	size_t __measured_size = _Generic((v), \
@@ -617,7 +623,7 @@ extern "C" {
 #define Z_CBPRINTF_STORE_ARG(buf, arg) do { \
 	if (Z_CBPRINTF_VA_STACK_LL_DBL_MEMCPY) { \
 		/* If required, copy arguments by word to avoid unaligned access.*/ \
-		__auto_type _v = Z_ARGIFY(Z_CONSTIFY(arg)); \
+		Z_CBPRINTF_AUTO_TYPE(Z_ARGIFY(Z_CONSTIFY(arg))) _v = Z_ARGIFY(Z_CONSTIFY(arg)); \
 		double _d = _Generic(Z_ARGIFY(arg), \
 				float : Z_ARGIFY(arg), \
 				default : \

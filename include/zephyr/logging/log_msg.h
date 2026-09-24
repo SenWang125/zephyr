@@ -572,9 +572,12 @@ do { \
 } while (false)
 
 #if defined(__cplusplus)
-#define Z_AUTO_TYPE auto
+#define Z_AUTO_TYPE(v) auto
+#elif TOOLCHAIN_HAS_C_AUTO_TYPE
+#define Z_AUTO_TYPE(v) __auto_type
 #else
-#define Z_AUTO_TYPE __auto_type
+/* ?. Reproduces the array/function decay __auto_type would apply. */
+#define Z_AUTO_TYPE(v) __typeof__(0 ? (v) : (v))
 #endif
 
 /* Macro for getting name of a local variable with the exception of the first argument
@@ -584,7 +587,8 @@ do { \
 
 /* Create local variable from input variable (expect for the first (fmt) argument). */
 #define Z_LOG_LOCAL_ARG_CREATE(idx, arg) \
-	COND_CODE_0(idx, (), (Z_AUTO_TYPE Z_LOG_LOCAL_ARG_NAME(idx, arg) = Z_ARGIFY(arg)))
+	COND_CODE_0(idx, (), \
+		(Z_AUTO_TYPE(Z_ARGIFY(arg)) Z_LOG_LOCAL_ARG_NAME(idx, arg) = Z_ARGIFY(arg)))
 
 /* First level of processing creates stack variables to be passed for further processing.
  * This is done to prevent multiple evaluations of input arguments (in case argument
