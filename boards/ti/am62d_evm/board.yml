@@ -1,0 +1,9 @@
+# Copyright (c) 2025-2026 Texas Instruments Incorporated
+# SPDX-License-Identifier: Apache-2.0
+
+board:
+  name: am62d_evm
+  full_name: AM62D2 EVM
+  vendor: ti
+  socs:
+    - name: am62d2
