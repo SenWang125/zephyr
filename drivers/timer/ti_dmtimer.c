@@ -88,14 +88,15 @@ static void ti_dmtimer_isr(void *param)
 	uint32_t delta_cycles = curr_cycle - data->last_cycle;
 	uint32_t delta_ticks = delta_cycles / CYC_PER_TICK;
 
-	data->last_cycle = curr_cycle;
+	/* announced ticks only, so the part of a tick not yet announced carries over */
+	data->last_cycle += delta_ticks * CYC_PER_TICK;
 
 	/* ACK match interrupt */
 	TI_DM_TIMER_WRITE(systick_timer_dev, 1, IRQSTATUS, MAT_IT_FLAG);
 
 	if (!IS_ENABLED(CONFIG_TICKLESS_KERNEL)) {
 		/* Setup next match time */
-		uint64_t next_cycle = curr_cycle + CYC_PER_TICK;
+		uint32_t next_cycle = data->last_cycle + CYC_PER_TICK;
 
 		TI_DM_TIMER_WRITE(systick_timer_dev, next_cycle, TMAR, COMPARE_VALUE);
 	}
