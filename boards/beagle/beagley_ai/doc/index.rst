@@ -9,7 +9,8 @@ targeted for automotive applications.
 Hardware
 ********
 BeagleY-AI is powered by TI AM67A (J722S) SoC, which has two domains (Main,
-MCU). This document gives overview of Zephyr running on both Cortex R5.
+MCU). This document gives overview of Zephyr running on both Cortex R5 and on
+the first C7x DSP.
 
 L1 Memory System
 ----------------
@@ -28,6 +29,16 @@ The RAT module performs a region based address translation. It translates a
 32-bit input address into a 36-bit output address. Any input transaction that
 starts inside of a programmed region will have its address translated, if the
 region is enabled.
+
+C7x DSP
+-------
+The SoC carries two C7524 DSP clusters, C7x_0 and C7x_1, each with 2MB of
+L2SRAM at its own address and its own CLEC. Zephyr supports C7x_0.
+
+* 2MB L2SRAM (UMC_MEM_MAIN) at 0x7E000000
+* 512KB L2AUX (UMC_MEM_AUX) at 0x7F000000
+* CLEC interrupt controller at 0x7C200000
+* DMTimer1 as the system clock, routed through the CLEC
 
 VIM Interrupt Controller
 ------------------------
@@ -79,6 +90,17 @@ Note that BeagleY-AI has 4GB of DDR.
 | DDR Shared Region | 0x00A1000000  | 0x00A1000000 | 16MB   |
 +-------------------+---------------+--------------+--------+
 
+The C7x has no TCM. It runs from the DDR region the Linux device tree reserves
+for it, and its L2SRAM is addressed the same way from both sides.
+
++-------------------+---------------+--------------+--------+
+| Region            | Addr from A53 | C7x_0        | Size   |
++===================+===============+==============+========+
+| L2SRAM            | 0x007E000000  | 0x007E000000 | 2MB    |
++-------------------+---------------+--------------+--------+
+| DDR Shared Region | 0x00A3000000  | 0x00A3000000 | 16MB   |
++-------------------+---------------+--------------+--------+
+
 Steps to run the image
 ----------------------
 Here is an example for the :zephyr:code-sample:`hello_world` application
@@ -95,6 +117,30 @@ For the MCU domain Cortex R5F on BeagleY-AI:
    :zephyr-app: samples/hello_world
    :board: beagley_ai/j722s/mcu_r5f0_0
    :goals: build
+
+For the C7x DSP on BeagleY-AI:
+
+.. zephyr-app-commands::
+   :zephyr-app: samples/subsys/ipc/openamp_rsc_table
+   :board: beagley_ai/j722s/c71_0
+   :goals: build
+
+The C7x core is built with the TI C7000 Code Generation Tools, see
+:ref:`toolchain_ti_c7000_cgt`. Its firmware name is the one the Linux device
+tree gives the C7x remoteproc node:
+
+.. code-block:: console
+
+   cp build/zephyr/zephyr.elf /lib/firmware/j722s-c71_0-fw
+   echo stop > /sys/class/remoteproc/remoteprocN/state
+   echo start > /sys/class/remoteproc/remoteprocN/state
+
+Console output from the C7x goes to the remoteproc trace buffer, not a UART,
+because Linux owns UART0 on this board:
+
+.. code-block:: console
+
+   cat /sys/kernel/debug/remoteproc/remoteprocN/trace0
 
 To load the image:
 
@@ -113,7 +159,7 @@ To load the image:
 Console
 -------
 The Zephyr on BeagleY-AI Cortex-R5F uses UART 1 (HAT pins 8-TX, 10-RX)
-as console.
+as console. The C7x uses the remoteproc trace buffer.
 
 References
 **********

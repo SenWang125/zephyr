@@ -1,0 +1,14 @@
+identifier: beagley_ai/j722s/c71_0
+name: BeagleY-AI C7524 DSP Core
+type: mcu
+arch: c7x
+toolchain:
+  - cl7x
+testing:
+  default: false
+  ignore_tags:
+    - net
+    - bluetooth
+    - cpp
+ram: 16384
+vendor: beagle
