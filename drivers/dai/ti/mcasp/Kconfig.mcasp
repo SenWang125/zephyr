@@ -1,0 +1,9 @@
+# Copyright (c) 2026 Texas Instruments Incorporated
+# SPDX-License-Identifier: Apache-2.0
+
+config DAI_TI_MCASP
+	bool "TI McASP (Multichannel Audio Serial Port) DAI driver"
+	default y
+	depends on DT_HAS_TI_AM62DX_MCASP_ENABLED
+	help
+	  Select this to enable the TI McASP DAI driver (AM62D family).
