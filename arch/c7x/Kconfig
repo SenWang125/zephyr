@@ -1,0 +1,63 @@
+# Copyright (c) 2026 Texas Instruments Incorporated
+# SPDX-License-Identifier: Apache-2.0
+#
+
+config ARCH
+	string
+	default "c7x" if C7X
+
+if C7X
+
+config CPU_C7504
+	bool
+	select CPU_HAS_MMU
+	select MMU
+	help
+	  This option signifies the use of a C7504 (C7x256v) DSP core.
+
+config CPU_C7524
+	bool
+	select CPU_HAS_MMU
+	select MMU
+	help
+	  This option signifies the use of a C7524 (C7x256v) DSP core.
+	  The core has the internal lookup table and histogram
+	  accelerator.
+
+config C7X_SOC_SYSTEM_HALT
+	bool
+	help
+	  The SoC provides z_c7x_soc_system_halt(), which arch_system_halt()
+	  calls with interrupts locked.
+
+menu "C7x Architecture Options"
+
+config C7X_DBG_TRACE
+	bool "Exception debug trace"
+	help
+	  The reset and NME vectors record a trace and
+	  the faulting RP in z_c7x_dbg_trace before halting. Without this the
+	  vectors record nothing when halted.
+
+config C7X_ILUT
+	bool "Internal lookup table and histogram"
+	depends on CPU_C7524
+	default y
+	help
+	  Permit the internal lookup table and histogram instructions. They
+	  are disallowed out of reset and raise an exception until the enable
+	  register is written.
+
+config C7X_I2528_WORKAROUND
+	bool "Work around silicon errata i2528"
+	default y
+	help
+	  The MMU can misclassify the load/store category of an instruction
+	  while checking memory permissions, so a valid access to a read-only
+	  page may be flagged or an illegal store to one allowed. The compiler
+	  avoids the affected sequences by default. If no memory page is
+	  configured read-only, the workaround is not needed and can be
+	  disabled.
+endmenu
+
+endif # C7X

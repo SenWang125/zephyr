@@ -22,6 +22,8 @@
 # include <zephyr/arch/arm64/barrier.h>
 # elif defined(CONFIG_ARC)
 # include <zephyr/arch/arc/barrier.h>
+# elif defined(CONFIG_C7X)
+# include <zephyr/arch/c7x/barrier.h>
 # endif
 #elif defined(CONFIG_BARRIER_OPERATIONS_BUILTIN)
 #include <zephyr/sys/barrier_builtin.h>

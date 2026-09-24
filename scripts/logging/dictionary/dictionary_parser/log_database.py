@@ -25,6 +25,9 @@ ARCHS = {
     "arm64": {
         "kconfig": "CONFIG_ARM64",
     },
+    "c7x": {
+        "kconfig": "CONFIG_C7X",
+    },
     "hexagon": {
         "kconfig": "CONFIG_HEXAGON",
     },

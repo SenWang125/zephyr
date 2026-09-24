@@ -1,0 +1,159 @@
+/*
+ * Copyright (c) 2026 Texas Instruments Incorporated
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/**
+ * @file
+ * @brief C7x control register accessors
+ */
+
+#ifndef ZEPHYR_INCLUDE_ARCH_C7X_LIB_HELPERS_H_
+#define ZEPHYR_INCLUDE_ARCH_C7X_LIB_HELPERS_H_
+
+#include <zephyr/toolchain.h>
+#include <zephyr/types.h>
+
+#include <c7x.h>
+#include <zephyr/arch/c7x/cpu.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/** @cond INTERNAL_HIDDEN */
+
+/* Event flag, set, clear and enable registers carry one bit per event line. */
+static ALWAYS_INLINE uint64_t z_c7x_read_efr(void)
+{
+	return (uint64_t)__get_indexed(__EFR, 0);
+}
+
+static ALWAYS_INLINE void z_c7x_write_efclr(uint64_t mask)
+{
+	__set_indexed(__EFCLR, 0, mask);
+}
+
+static ALWAYS_INLINE uint64_t z_c7x_read_eer(void)
+{
+	return (uint64_t)__EER;
+}
+
+static ALWAYS_INLINE void z_c7x_write_eeset(uint64_t mask)
+{
+	__set_indexed(__EESET, 0, mask);
+}
+
+static ALWAYS_INLINE void z_c7x_write_eeclr(uint64_t mask)
+{
+	__set_indexed(__EECLR, 0, mask);
+}
+
+/* EPRI is indexed by event line. */
+static ALWAYS_INLINE void z_c7x_write_epri(unsigned int evt, uint64_t val)
+{
+	__set_indexed(__EPRI, evt, val);
+}
+
+static ALWAYS_INLINE uint64_t z_c7x_read_ahpee(void)
+{
+	return (uint64_t)__AHPEE;
+}
+
+static ALWAYS_INLINE uint64_t z_c7x_read_tsc(void)
+{
+	return (uint64_t)__TSC;
+}
+
+static ALWAYS_INLINE uint64_t z_c7x_read_tsr(void)
+{
+	return (uint64_t)__TSR;
+}
+
+static ALWAYS_INLINE uint64_t z_c7x_read_ecsp_s(void)
+{
+	return (uint64_t)__ECSP_S;
+}
+
+static ALWAYS_INLINE void z_c7x_write_ecsp_s(uint64_t val)
+{
+	__ECSP_S = val;
+}
+
+static ALWAYS_INLINE uint64_t z_c7x_read_tcsp(void)
+{
+	return (uint64_t)__TCSP;
+}
+
+static ALWAYS_INLINE void z_c7x_write_tcsp(uint64_t val)
+{
+	__TCSP = val;
+}
+
+static ALWAYS_INLINE uint64_t z_c7x_read_estp_s(void)
+{
+	return (uint64_t)__ESTP_S;
+}
+
+static ALWAYS_INLINE void z_c7x_write_estp_s(uint64_t val)
+{
+	__ESTP_S = val;
+}
+
+static ALWAYS_INLINE uint64_t z_c7x_read_estp_gs(void)
+{
+	return (uint64_t)__ESTP_GS;
+}
+
+static ALWAYS_INLINE void z_c7x_write_estp_gs(uint64_t val)
+{
+	__ESTP_GS = val;
+}
+
+static ALWAYS_INLINE unsigned int z_c7x_read_cxm(void)
+{
+	return (unsigned int)(z_c7x_read_tsr() & C7X_TSR_CXM_MASK);
+}
+
+static ALWAYS_INLINE unsigned int z_c7x_read_cop(void)
+{
+	return (unsigned int)((z_c7x_read_tsr() & C7X_TSR_COP_MASK) >> 8);
+}
+
+/* Program the event table of the mode the core is in. */
+static ALWAYS_INLINE void z_c7x_write_estp_current(uint64_t val)
+{
+	switch (z_c7x_read_cxm()) {
+	case C7X_CXM_S:
+		z_c7x_write_estp_s(val);
+		break;
+	case C7X_CXM_GS:
+		z_c7x_write_estp_gs(val);
+		break;
+	default:
+		break;
+	}
+}
+
+static ALWAYS_INLINE uint64_t z_c7x_read_ierr(void)
+{
+	return (uint64_t)__IERR;
+}
+
+static ALWAYS_INLINE uint64_t z_c7x_read_iear(void)
+{
+	return (uint64_t)__IEAR;
+}
+
+static ALWAYS_INLINE uint64_t z_c7x_read_iesr(void)
+{
+	return (uint64_t)__IESR;
+}
+
+/** @endcond */
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* ZEPHYR_INCLUDE_ARCH_C7X_LIB_HELPERS_H_ */

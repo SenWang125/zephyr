@@ -34,6 +34,8 @@
 #include <zephyr/arch/sparc/arch_inlines.h>
 #elif defined(CONFIG_RX)
 #include <zephyr/arch/rx/arch_inlines.h>
+#elif defined(CONFIG_C7X)
+#include <zephyr/arch/c7x/arch_inlines.h>
 #elif defined(CONFIG_HEXAGON)
 #include <zephyr/arch/hexagon/arch_inlines.h>
 #elif defined(CONFIG_ARCH_IS_SET)
