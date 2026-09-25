@@ -199,6 +199,20 @@ static int omap_mailbox_set_enabled(const struct device *dev, uint32_t channel, 
 	return 0;
 }
 
+static void omap_mailbox_disable_newmsg_irqs(const struct device *dev)
+{
+	const struct omap_mailbox_config *cfg = DEV_CFG(dev);
+	volatile struct omap_mailbox_regs *regs = DEV_REG_BASE(dev);
+	uint32_t mask = 0U;
+
+	for (int i_channel = 0; i_channel < MAILBOX_MAX_CHANNELS; i_channel++) {
+		mask |= MAILBOX_IRQ_NEWMSG(i_channel);
+	}
+
+	/* earlier software on this core may have left them enabled */
+	regs->irq_regs[cfg->usr_id].enable_clear = mask;
+}
+
 static DEVICE_API(mbox, omap_mailbox_driver_api) = {
 	.send = omap_mailbox_send,
 	.register_callback = omap_mailbox_register_callback,
@@ -217,6 +231,7 @@ static DEVICE_API(mbox, omap_mailbox_driver_api) = {
 	static int omap_mailbox_##idx##_init(const struct device *dev)				\
 	{											\
 		DEVICE_MMIO_NAMED_MAP(dev, reg_base, K_MEM_CACHE_NONE);				\
+		omap_mailbox_disable_newmsg_irqs(dev);						\
 		IRQ_CONNECT(DT_INST_IRQN(idx), DT_INST_IRQ(idx, priority), omap_mailbox_isr,	\
 			    DEVICE_DT_INST_GET(idx),						\
 			    COND_CODE_1(DT_INST_IRQ_HAS_CELL(idx, flags),			\
