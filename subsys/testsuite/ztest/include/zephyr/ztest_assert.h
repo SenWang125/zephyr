@@ -193,7 +193,7 @@ static inline __printf_like(6, 7) bool z_zexpect(bool cond, const char *default_
 	_zassert_base(cond, default_msg, msg, ##__VA_ARGS__)
 
 #define zassert(cond, default_msg, ...)                                                            \
-	_zassert_va(cond, default_msg, COND_CODE_1(__VA_OPT__(1), (__VA_ARGS__), (NULL)))
+	_zassert_va(cond, default_msg, COND_CODE_1(IS_EMPTY(__VA_ARGS__), (NULL), (__VA_ARGS__)))
 
 /**
  * @brief Skip the test, if @a cond is false
@@ -230,7 +230,7 @@ static inline __printf_like(6, 7) bool z_zexpect(bool cond, const char *default_
 	_zassume_base(cond, default_msg, msg, ##__VA_ARGS__)
 
 #define zassume(cond, default_msg, ...)                                                            \
-	_zassume_va(cond, default_msg, COND_CODE_1(__VA_OPT__(1), (__VA_ARGS__), (NULL)))
+	_zassume_va(cond, default_msg, COND_CODE_1(IS_EMPTY(__VA_ARGS__), (NULL), (__VA_ARGS__)))
 
 /**
  * @brief If @a cond is false, fail the test but continue its execution.
@@ -259,7 +259,7 @@ static inline __printf_like(6, 7) bool z_zexpect(bool cond, const char *default_
 	_zexpect_base(cond, default_msg, msg, ##__VA_ARGS__)
 
 #define zexpect(cond, default_msg, ...)                                                            \
-	_zexpect_va(cond, default_msg, COND_CODE_1(__VA_OPT__(1), (__VA_ARGS__), (NULL)))
+	_zexpect_va(cond, default_msg, COND_CODE_1(IS_EMPTY(__VA_ARGS__), (NULL), (__VA_ARGS__)))
 
 /**
  * @brief Assert that this function call won't be reached
